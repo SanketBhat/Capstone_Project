@@ -30,4 +30,7 @@ public interface ArticleDao {
 
     @Query("select * from article_type where id = :id")
     List<ArticleType> getArticleTypes(long id);
+
+    @Query("select a.id, title from articles a, article_type at  where a.id = at.id and at.type =" + ArticleType.Type.TOP_HEAD + " order by published_at desc")
+    List<Article> getHeadlines();
 }

@@ -1,7 +1,10 @@
 package com.udacity.sanketbhat.news4you;
 
 import android.annotation.SuppressLint;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -12,7 +15,9 @@ import com.udacity.sanketbhat.news4you.database.ArticleDao;
 import com.udacity.sanketbhat.news4you.model.Article;
 import com.udacity.sanketbhat.news4you.model.ArticleType;
 import com.udacity.sanketbhat.news4you.model.NewsResponse;
+import com.udacity.sanketbhat.news4you.widget.NewsWidget;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -184,12 +189,18 @@ public class Repository {
 
     private void insertAll(Article[] articles, int type) {
         executor.execute(() -> {
+            ArrayList<Article> insertedArticles = new ArrayList<>();
             for (Article article : articles) {
+                int insertCount = 0;
                 try {
                     long id = articleDao.insert(article);
                     if (id == -1) {
                         id = articleDao.getArticleId(article.getTitle(), article.getUrl(), article.getPublishedAt());
                         Log.e("Retrieved id", "" + id);
+                    } else {
+                        insertCount++;
+                        article.setId((int) id);
+                        insertedArticles.add(article);
                     }
                     ArticleType articleType = new ArticleType();
                     articleType.setId((int) id);
@@ -199,7 +210,19 @@ public class Repository {
                     e.printStackTrace();
                     //TODO: Report using google analytics
                 }
+                if (insertCount > 0 && type == ArticleType.Type.TOP_HEAD) {
+                    AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+                    int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(context, NewsWidget.class));
+                    if (ids.length > 0) {
+                        Intent intent = new Intent(context, NewsWidget.class);
+                        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                        context.sendBroadcast(intent);
+                    }
+                    //TODO: If app is in background start notification service and notify user about new articles
+                }
             }
         });
     }
+
 }

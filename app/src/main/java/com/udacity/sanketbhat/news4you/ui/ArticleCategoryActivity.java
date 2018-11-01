@@ -3,6 +3,7 @@ package com.udacity.sanketbhat.news4you.ui;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +17,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -130,7 +132,7 @@ public class ArticleCategoryActivity extends AppCompatActivity implements Naviga
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment implements NewsListAdapter.OnItemClickListener {
+    public static class PlaceholderFragment extends Fragment implements NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
         /**
          * The fragment argument representing the section number for this
          * fragment.
@@ -138,6 +140,8 @@ public class ArticleCategoryActivity extends AppCompatActivity implements Naviga
         private static final String ARG_SECTION_NUMBER = "section_number";
         private NewsListAdapter adapter;
         private MainViewModel viewModel;
+        private SwipeRefreshLayout swipeRefreshLayout;
+        private int type;
 
         public PlaceholderFragment() {
 
@@ -156,14 +160,22 @@ public class ArticleCategoryActivity extends AppCompatActivity implements Naviga
         }
 
         @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            type = getArguments().getInt(ARG_SECTION_NUMBER);
+        }
+
+        @Override
         public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_article_category, container, false);
+            swipeRefreshLayout = rootView.findViewById(R.id.swipeRefreshLayout);
+            swipeRefreshLayout.setOnRefreshListener(this);
             RecyclerView recyclerView = rootView.findViewById(R.id.article_category_list);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter = new NewsListAdapter(null, this);
             viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-            viewModel.getArticlesByCategory(getArguments().getInt(ARG_SECTION_NUMBER)).observe(this, adapter::setArticles);
+            viewModel.getArticlesByCategory(type).observe(this, adapter::setArticles);
             recyclerView.setAdapter(adapter);
             return rootView;
         }
@@ -174,6 +186,14 @@ public class ArticleCategoryActivity extends AppCompatActivity implements Naviga
             Intent intent = new Intent(getContext(), NewsDetailActivity.class);
             intent.putExtra("article", article);
             startActivity(intent, options.toBundle());
+        }
+
+        @Override
+        public void onRefresh() {
+            viewModel.loadArticlesByCategory(type, true);
+            swipeRefreshLayout.setRefreshing(true);
+            Handler handler = new Handler();
+            handler.postDelayed(() -> swipeRefreshLayout.setRefreshing(false), 3000);
         }
     }
 

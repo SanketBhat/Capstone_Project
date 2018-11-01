@@ -3,6 +3,7 @@ package com.udacity.sanketbhat.news4you.ui;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -10,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,7 +26,10 @@ import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
 import com.udacity.sanketbhat.news4you.model.Article;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
+
+    private MainViewModel viewModel;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +58,10 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
 
-        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this);
+
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getArticleList().observe(this, adapter::setArticles);
     }
 
@@ -118,5 +126,13 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(this, NewsDetailActivity.class);
         intent.putExtra("article", article);
         startActivity(intent, options.toBundle());
+    }
+
+    @Override
+    public void onRefresh() {
+        viewModel.loadTopHeadlines(true);
+        swipeRefreshLayout.setRefreshing(true);
+        Handler handler = new Handler();
+        handler.postDelayed(() -> swipeRefreshLayout.setRefreshing(false), 3000);
     }
 }
