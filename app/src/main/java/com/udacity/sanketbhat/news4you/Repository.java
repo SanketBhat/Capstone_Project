@@ -18,6 +18,7 @@ import com.udacity.sanketbhat.news4you.model.NewsResponse;
 import com.udacity.sanketbhat.news4you.widget.NewsWidget;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -101,7 +102,7 @@ public class Repository {
 
                             if (newsResponse.getArticles() != null && newsResponse.getStatus().equalsIgnoreCase("ok")) {
                                 Toast.makeText(context, "Got fresh data from the server", Toast.LENGTH_SHORT).show();
-                                insertAll(newsResponse.getArticles(), ArticleType.Type.TOP_HEAD);
+                                insertAllAsync(newsResponse.getArticles(), ArticleType.Type.TOP_HEAD);
                             } else {
                                 Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
                             }
@@ -157,7 +158,7 @@ public class Repository {
                             storeCurrentPage(call.request().url().toString(), type);
 
                             if (newsResponse.getArticles() != null && newsResponse.getStatus().equalsIgnoreCase("ok")) {
-                                insertAll(newsResponse.getArticles(), type);
+                                insertAllAsync(newsResponse.getArticles(), type);
                             }
                             return;
                         }
@@ -187,11 +188,14 @@ public class Repository {
         extras.putInt(TOTAL_PAGES_TEMPLATE + type, totalPages);
     }
 
-    private void insertAll(Article[] articles, int type) {
-        executor.execute(() -> {
+    private void insertAllAsync(Article[] articles, int type) {
+        executor.execute(() -> insertAll(articles, type));
+    }
+
+    public List<Article> insertAll(Article[] articles, int type) {
             ArrayList<Article> insertedArticles = new ArrayList<>();
+        int insertCount = 0;
             for (Article article : articles) {
-                int insertCount = 0;
                 try {
                     long id = articleDao.insert(article);
                     if (id == -1) {
@@ -210,19 +214,19 @@ public class Repository {
                     e.printStackTrace();
                     //TODO: Report using google analytics
                 }
-                if (insertCount > 0 && type == ArticleType.Type.TOP_HEAD) {
-                    AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-                    int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(context, NewsWidget.class));
-                    if (ids.length > 0) {
-                        Intent intent = new Intent(context, NewsWidget.class);
-                        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-                        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                        context.sendBroadcast(intent);
-                    }
-                    //TODO: If app is in background start notification service and notify user about new articles
-                }
             }
-        });
+        if (insertCount > 0 && type == ArticleType.Type.TOP_HEAD) {
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(context, NewsWidget.class));
+            if (ids.length > 0) {
+                Intent intent = new Intent(context, NewsWidget.class);
+                intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                context.sendBroadcast(intent);
+                }
+            return insertedArticles;
+            }
+        return null;
     }
 
 }

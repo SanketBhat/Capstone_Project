@@ -27,4 +27,9 @@
     <string name="add_widget">Add widget</string>
     <string name="empty_message_text_news_widget">No news updates!</string>
     <string name="description_divider">Divider</string>
+
+    <string name="new_article_notification_title_template">New news articles available!</string>
+
+    <string name="action_share">Share</string>
+    <string name="action_reply">Reply</string>
 </resources>

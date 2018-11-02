@@ -5,6 +5,7 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.RoomWarnings;
 
 import com.udacity.sanketbhat.news4you.model.Article;
 import com.udacity.sanketbhat.news4you.model.ArticleType;
@@ -19,6 +20,7 @@ public interface ArticleDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(ArticleType articleType);
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("select * from articles a, article_type at  where a.id = at.id and at.type =:type order by published_at desc")
     LiveData<List<Article>> getArticles(int type);
 
@@ -31,6 +33,7 @@ public interface ArticleDao {
     @Query("select * from article_type where id = :id")
     List<ArticleType> getArticleTypes(long id);
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("select a.id, title from articles a, article_type at  where a.id = at.id and at.type =" + ArticleType.Type.TOP_HEAD + " order by published_at desc")
     List<Article> getHeadlines();
 }

@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
+import com.udacity.sanketbhat.news4you.Dependency;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
 import com.udacity.sanketbhat.news4you.model.Article;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity
 
     private MainViewModel viewModel;
     private SwipeRefreshLayout swipeRefreshLayout;
+    public static boolean isAppAlive = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        isAppAlive = true;
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -63,6 +67,8 @@ public class MainActivity extends AppCompatActivity
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getArticleList().observe(this, adapter::setArticles);
+
+        Dependency.scheduleUpdateJob(getApplicationContext());
     }
 
     @Override
@@ -134,5 +140,11 @@ public class MainActivity extends AppCompatActivity
         swipeRefreshLayout.setRefreshing(true);
         Handler handler = new Handler();
         handler.postDelayed(() -> swipeRefreshLayout.setRefreshing(false), 3000);
+    }
+
+    @Override
+    protected void onDestroy() {
+        isAppAlive = false;
+        super.onDestroy();
     }
 }
