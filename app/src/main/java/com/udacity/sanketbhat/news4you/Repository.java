@@ -32,6 +32,7 @@ public class Repository {
     private static final String TOTAL_PAGES_TEMPLATE = "total_pages_";
     private static final String CURRENT_PAGE_TEMPLATE = "current_page_";
     private static final String LAST_REFRESH_TEMPLATE = "last_refresh_";
+    private static final String LOADING_PAGE_TEMPLATE = "loading_";
     private static final long AUTO_REFRESH_INTERVAL = 120000;// Two minutes(in milliseconds)
     private static final String TAG = "Repository";
     @SuppressLint("StaticFieldLeak") //It is OK to use Application Context
@@ -61,9 +62,15 @@ public class Repository {
     }
 
     public void getTopHeadlines(boolean onDemand) {
-        if (onDemand || isAfterInterval(ArticleType.Type.TOP_HEAD))
+        int type = ArticleType.Type.TOP_HEAD;
+        if ((onDemand || isAfterInterval(type)) && isNotLoading(type)) {
             getTopHeadlines(1);
+        }
 
+    }
+
+    private boolean isNotLoading(int type) {
+        return !extras.getBoolean(LOADING_PAGE_TEMPLATE + type, false);
     }
 
     private boolean isAfterInterval(int type) {
@@ -72,8 +79,10 @@ public class Repository {
     }
 
     public void getNextTopHeadlines() {
-        int nextPage = getNextPageNumber(ArticleType.Type.TOP_HEAD);
-        if (nextPage != -1) getTopHeadlines(nextPage);
+        if (isNotLoading(ArticleType.Type.TOP_HEAD)) {
+            int nextPage = getNextPageNumber(ArticleType.Type.TOP_HEAD);
+            if (nextPage != -1) getTopHeadlines(nextPage);
+        }
     }
 
     private int getNextPageNumber(int type) {
@@ -90,6 +99,7 @@ public class Repository {
     private void getTopHeadlines(int pageNumber) {
         Log.d(TAG, "getTopHeadlines: Requesting page: " + pageNumber + " type= " + ArticleType.Type.getName(ArticleType.Type.TOP_HEAD));
 
+        extras.putBoolean(LOADING_PAGE_TEMPLATE + ArticleType.Type.TOP_HEAD, true);
         apiService.getTopHeadlines("in", pageNumber, context.getString(R.string.NEWS_API_KEY))
                 .enqueue(new Callback<NewsResponse>() {
                     @Override
@@ -133,20 +143,24 @@ public class Repository {
     }
 
     public void getArticlesByCategory(int type, boolean onDemand) {
-        if (onDemand || isAfterInterval(type)) {
+        if ((onDemand || isAfterInterval(type)) && isNotLoading(type)) {
             getArticlesByCategory(type, 1);
         }
     }
 
     public void getNextArticleByCategory(int type) {
-        int nextPage = getNextPageNumber(type);
-        if (nextPage != -1)
-            getArticlesByCategory(type, nextPage);
+        if (isNotLoading(type)) {
+            int nextPage = getNextPageNumber(type);
+            Log.e(TAG, "getNextArticleByCategory: not loading next page yet; next page number: " + nextPage);
+            if (nextPage != -1)
+                getArticlesByCategory(type, nextPage);
+        }
     }
 
     private void getArticlesByCategory(int type, int pageNumber) {
         Log.d(TAG, "getArticlesByCategory: Requesting page: " + pageNumber + " type= " + ArticleType.Type.getName(type));
 
+        extras.putBoolean(LOADING_PAGE_TEMPLATE + type, true);
         apiService.getArticlesByCategory("in", pageNumber, context.getString(R.string.NEWS_API_KEY), ArticleType.Type.getName(type))
                 .enqueue(new Callback<NewsResponse>() {
                     @Override
@@ -193,28 +207,28 @@ public class Repository {
     }
 
     public List<Article> insertAll(Article[] articles, int type) {
-            ArrayList<Article> insertedArticles = new ArrayList<>();
+        ArrayList<Article> insertedArticles = new ArrayList<>();
         int insertCount = 0;
-            for (Article article : articles) {
-                try {
-                    long id = articleDao.insert(article);
-                    if (id == -1) {
-                        id = articleDao.getArticleId(article.getTitle(), article.getUrl(), article.getPublishedAt());
-                        Log.e("Retrieved id", "" + id);
-                    } else {
-                        insertCount++;
-                        article.setId((int) id);
-                        insertedArticles.add(article);
-                    }
-                    ArticleType articleType = new ArticleType();
-                    articleType.setId((int) id);
-                    articleType.setType(type);
-                    articleDao.insert(articleType);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    //TODO: Report using google analytics
+        for (Article article : articles) {
+            try {
+                long id = articleDao.insert(article);
+                if (id == -1) {
+                    id = articleDao.getArticleId(article.getTitle(), article.getUrl(), article.getPublishedAt());
+                    Log.e("Retrieved id", "" + id);
+                } else {
+                    insertCount++;
+                    article.setId((int) id);
+                    insertedArticles.add(article);
                 }
+                ArticleType articleType = new ArticleType();
+                articleType.setId((int) id);
+                articleType.setType(type);
+                articleDao.insert(articleType);
+            } catch (Exception e) {
+                e.printStackTrace();
+                //TODO: Report using google analytics
             }
+        }
         if (insertCount > 0 && type == ArticleType.Type.TOP_HEAD) {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(context, NewsWidget.class));
@@ -223,9 +237,11 @@ public class Repository {
                 intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
                 context.sendBroadcast(intent);
-                }
-            return insertedArticles;
             }
+            extras.putBoolean(LOADING_PAGE_TEMPLATE + type, false);
+            return insertedArticles;
+        }
+        extras.putBoolean(LOADING_PAGE_TEMPLATE + type, false);
         return null;
     }
 

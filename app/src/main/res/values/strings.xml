@@ -32,4 +32,10 @@
 
     <string name="action_share">Share</string>
     <string name="action_reply">Reply</string>
+    <string name="search_hint">Search Articles</string>
+    <string name="title_activity_article_search">ArticleSearchActivity</string>
+    <string name="action_search">Search</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="app_icon_description">App Icon</string>
+    <string name="server_attribution_splash_screen">Powered by NewsAPI.org</string>
 </resources>

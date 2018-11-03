@@ -16,13 +16,11 @@ public class MainViewModel extends AndroidViewModel {
 
     private final Repository repository;
     private final ArticleDao articleDao;
-    private final LiveData<List<Article>> topHeadlines;
 
     public MainViewModel(Application application) {
         super(application);
         articleDao = Dependency.getArticleDao(getApplication().getApplicationContext());
         repository = Dependency.getRepository(getApplication().getApplicationContext());
-        topHeadlines = articleDao.getArticles(ArticleType.Type.TOP_HEAD);
     }
 
 
@@ -36,15 +34,19 @@ public class MainViewModel extends AndroidViewModel {
         return articleDao.getArticles(type);
     }
 
-    LiveData<List<Article>> getAllArticles() {
-        return articleDao.getAllArticles();
-    }
-
-    public void loadTopHeadlines(boolean onDemand) {
+    void loadTopHeadlines(boolean onDemand) {
         repository.getTopHeadlines(onDemand);
     }
 
-    public void loadArticlesByCategory(int type, boolean onDemand) {
+    void loadArticlesByCategory(int type, boolean onDemand) {
         repository.getArticlesByCategory(type, onDemand);
+    }
+
+    void getNextTopHeadlines() {
+        repository.getNextTopHeadlines();
+    }
+
+    void getNextArticlesByCategory(int type) {
+        repository.getNextArticleByCategory(type);
     }
 }

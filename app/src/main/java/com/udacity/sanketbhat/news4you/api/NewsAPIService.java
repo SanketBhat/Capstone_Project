@@ -14,5 +14,5 @@ public interface NewsAPIService {
     Call<NewsResponse> getArticlesByCategory(@Query("country") String countryCode, @Query("page") int page, @Query("apiKey") String apiKey, @Query("category") String category);
 
     @GET("everything")
-    Call<NewsResponse> getEverything(@Query("q") String query, @Query("apiKey") String apiKey);
+    Call<NewsResponse> getEverything(@Query("q") String query, @Query("page") int page, @Query("apiKey") String apiKey);
 }

@@ -1,13 +1,12 @@
 package com.udacity.sanketbhat.news4you.ui;
 
+import android.app.SearchManager;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,6 +15,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,15 +23,17 @@ import android.widget.ImageView;
 
 import com.udacity.sanketbhat.news4you.Dependency;
 import com.udacity.sanketbhat.news4you.R;
+import com.udacity.sanketbhat.news4you.adapter.InfiniteScrollListener;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
 import com.udacity.sanketbhat.news4you.model.Article;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
+        implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, InfiniteScrollListener.LoadNextPageCallback {
 
+    public static boolean isAppAlive = false;
     private MainViewModel viewModel;
     private SwipeRefreshLayout swipeRefreshLayout;
-    public static boolean isAppAlive = false;
+    private NewsListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +44,30 @@ public class MainActivity extends AppCompatActivity
 
         isAppAlive = true;
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
+        setupNavigationDrawer(toolbar);
+        setupRecyclerView();
 
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this);
+
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getArticleList().observe(this, adapter::setArticles);
+
+        Dependency.scheduleUpdateJob(getApplicationContext());
+    }
+
+    private void setupRecyclerView() {
+        adapter = new NewsListAdapter(null, this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+
+        RecyclerView recyclerView = findViewById(R.id.newsList);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(adapter);
+        recyclerView.addOnScrollListener(new InfiniteScrollListener(layoutManager, this));
+        recyclerView.setHasFixedSize(true);
+    }
+
+    private void setupNavigationDrawer(Toolbar toolbar) {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -55,20 +77,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().findItem(R.id.nav_top_headlines).setChecked(true);
-
-        RecyclerView recyclerView = findViewById(R.id.newsList);
-        NewsListAdapter adapter = new NewsListAdapter(null, this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setHasFixedSize(true);
-
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(this);
-
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-        viewModel.getArticleList().observe(this, adapter::setArticles);
-
-        Dependency.scheduleUpdateJob(getApplicationContext());
     }
 
     @Override
@@ -85,6 +93,13 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        if (searchManager != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            searchView.setIconifiedByDefault(true);
+            searchView.setSubmitButtonEnabled(true);
+        }
         return true;
     }
 
@@ -146,5 +161,10 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         isAppAlive = false;
         super.onDestroy();
+    }
+
+    @Override
+    public void loadNextPage() {
+        viewModel.getNextTopHeadlines();
     }
 }
