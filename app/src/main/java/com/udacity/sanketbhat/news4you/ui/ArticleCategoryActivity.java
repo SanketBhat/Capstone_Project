@@ -4,8 +4,11 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -14,13 +17,15 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.ArticleCategoryPagerAdapter;
 import com.udacity.sanketbhat.news4you.model.ArticleType;
 
-public class ArticleCategoryActivity extends ArticleBaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ArticleCategoryActivity extends ArticleBaseActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
+    private Snackbar snackbar;
     private ViewPager mViewPager;
 
     @Override
@@ -31,6 +36,15 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("News Categories");
         setSupportActionBar(toolbar);
+
+        boolean isTablet = getResources().getBoolean(R.bool.tablet_layout);
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        if (isTablet) {
+            fab.setOnClickListener(this);
+        } else {
+            fab.hide();
+        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -122,4 +136,36 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
         return true;
     }
 
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.fab) {
+            ArticleCategoryPagerAdapter adapter = (ArticleCategoryPagerAdapter) mViewPager.getAdapter();
+            if (adapter != null) {
+                NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager()
+                        .findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG + adapter.fragmentTags[mViewPager.getCurrentItem()]);
+                if (fragment != null && fragment.getArticle() != null) {
+                    Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                            .setType("text/plain")
+                            .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
+                            .setChooserTitle(R.string.share_intent_chooser_title)
+                            .getIntent();
+
+                    if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
+                        startActivity(shareIntent);
+                    } else {
+                        showSnackbar("No app available to share");
+                    }
+                } else {
+                    showSnackbar("Select an article to share");
+                }
+            }
+        }
+    }
+
+    private void showSnackbar(String s) {
+        if (snackbar == null) snackbar = Snackbar.make(mViewPager, "", Snackbar.LENGTH_SHORT);
+        if (snackbar.isShownOrQueued()) snackbar.dismiss();
+        snackbar.setText(s);
+        snackbar.show();
+    }
 }

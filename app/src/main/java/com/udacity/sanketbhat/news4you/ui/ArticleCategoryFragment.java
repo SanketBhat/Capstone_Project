@@ -27,6 +27,11 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
     //The fragment argument representing the article type for this fragment
     private static final String ARG_ARTICLE_TYPE = "article_type";
 
+    //Extra states to handle config changes
+    private static final String EXTRA_NEWS_LIST_STATE = "newsListState";
+    private static final String EXTRA_CONTAINER_ID = "containerId";
+    private static final String EXTRA_REFRESHING_STATE = "refreshingState";
+
     //Other instance variables
     private NewsListAdapter adapter;
     private MainViewModel viewModel;
@@ -36,6 +41,9 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
     private boolean refreshing = false;
     private Snackbar snackbar;
     private boolean visible = false;
+
+    //Id for the view that will be replaced by detail fragment in tablet layouts
+    private int containerId = (int) (Math.random() * Integer.MAX_VALUE);
 
     public ArticleCategoryFragment() {
     }
@@ -53,18 +61,25 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreate(@Nullable Bundle state) {
+        super.onCreate(state);
         setUserVisibleHint(false);
         if (getArguments() != null) {
             type = getArguments().getInt(ARG_ARTICLE_TYPE);
+        }
+        if (state != null) {
+            containerId = state.getInt(EXTRA_CONTAINER_ID);
+            refreshing = state.getBoolean(EXTRA_REFRESHING_STATE);
         }
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_article_category, container, false);
+                             Bundle state) {
+        View rootView = inflater.inflate(R.layout.content_main, container, false);
+
+        View v = rootView.findViewById(R.id.main_detail_container);
+        if (v != null) v.setId(containerId);
 
         swipeRefreshLayout = rootView.findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this);
@@ -77,22 +92,52 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
         return rootView;
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        RecyclerView.LayoutManager layoutManager;
+        if (recyclerView != null && (layoutManager = recyclerView.getLayoutManager()) != null)
+            outState.putParcelable(EXTRA_NEWS_LIST_STATE, layoutManager.onSaveInstanceState());
+        outState.putInt(EXTRA_CONTAINER_ID, containerId);
+        outState.putBoolean(EXTRA_REFRESHING_STATE, refreshing);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+        if (layoutManager != null && savedInstanceState != null) {
+            layoutManager.onRestoreInstanceState(savedInstanceState.getParcelable(EXTRA_NEWS_LIST_STATE));
+        }
+    }
 
     private void setupRecyclerView(View rootView) {
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         adapter = new NewsListAdapter(null, this);
 
-        recyclerView = rootView.findViewById(R.id.article_category_list);
+        recyclerView = rootView.findViewById(R.id.newsList);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addOnScrollListener(new InfiniteScrollListener(layoutManager, this));
         recyclerView.setAdapter(adapter);
+
+
     }
 
     @Override
     public void onItemClick(@NonNull Article article, @NonNull ImageView imageView) {
         if (getContext() != null) {
-            NewsDetailActivity.launch(getContext(), article, getActivity(), imageView);
+            boolean isTablet = getContext().getResources().getBoolean(R.bool.tablet_layout);
+            if (isTablet) {
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(containerId, NewsDetailFragment.getInstance(article), NewsDetailFragment.FRAGMENT_TAG + getTag())
+                            .commit();
+                }
+            } else {
+                NewsDetailActivity.launch(getContext(), article, getActivity(), imageView);
+            }
         }
     }
 

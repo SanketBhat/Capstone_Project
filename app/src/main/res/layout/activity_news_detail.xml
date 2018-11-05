@@ -50,7 +50,11 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_news_detail" />
+    <FrameLayout
+        android:id="@+id/news_detail_activity_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -58,6 +62,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:srcCompat="@android:drawable/ic_menu_share" />
 
 </android.support.design.widget.CoordinatorLayout>

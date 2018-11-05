@@ -3,29 +3,28 @@ package com.udacity.sanketbhat.news4you.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsIntent;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ShareCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.model.Article;
-import com.udacity.sanketbhat.news4you.utils.DateAndTimeUtils;
 
-public class NewsDetailActivity extends AppCompatActivity {
+public class NewsDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String EXTRA_ARTICLE = "article";
     private Article article;
+    private Snackbar snackbar;
 
     public static void launch(@NonNull Context context, @NonNull Article article,
                               @Nullable Activity activity, @Nullable ImageView imageView) {
@@ -73,10 +72,13 @@ public class NewsDetailActivity extends AppCompatActivity {
             article = getIntent().getParcelableExtra(EXTRA_ARTICLE);
         }
 
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.news_detail_activity_container, NewsDetailFragment.getInstance(article), NewsDetailFragment.FRAGMENT_TAG)
+                    .commit();
+        }
+
         if (article != null) {
-
-            setTitle(article.getTitle());
-
             ImageView imageView = findViewById(R.id.image);
             Picasso.with(this)
                     .load(article.getUrlToImage())
@@ -84,29 +86,39 @@ public class NewsDetailActivity extends AppCompatActivity {
                     .centerCrop()
                     .into(imageView);
 
-            findViewById(R.id.fab).setOnClickListener(v -> {
-            });
+            findViewById(R.id.fab).setOnClickListener(this);
 
-            TextView title = findViewById(R.id.newsTitle);
-            TextView author = findViewById(R.id.newsAuthor);
-            TextView published = findViewById(R.id.publishedAt);
-            TextView desc = findViewById(R.id.description);
-            TextView content = findViewById(R.id.newsContent);
-            TextView url = findViewById(R.id.newsURL);
-
-            url.setText(article.getUrl());
-            url.setOnClickListener(v -> {
-                CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
-                intentBuilder.setToolbarColor(ContextCompat.getColor(NewsDetailActivity.this, R.color.colorPrimary));
-                CustomTabsIntent customTabsIntent = intentBuilder.build();
-                customTabsIntent.launchUrl(NewsDetailActivity.this, Uri.parse(article.getUrl()));
-            });
-            title.setText(article.getTitle());
-            author.setText(article.getAuthor());
-            String dateString = DateAndTimeUtils.getDateDisplayString(article.getPublishedAt());
-            published.setText(dateString);
-            desc.setText(article.getDescription());
-            content.setText(article.getContent());
+            setTitle(article.getTitle());
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.fab) {
+            NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
+            if (fragment != null && fragment.getArticle() != null) {
+                Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                        .setType("text/plain")
+                        .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
+                        .setChooserTitle(R.string.share_intent_chooser_title)
+                        .getIntent();
+
+                if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
+                    startActivity(shareIntent);
+                } else {
+                    showSnackbar("No app available to share");
+                }
+            } else {
+                showSnackbar("Select an article to share");
+            }
+        }
+    }
+
+    private void showSnackbar(String s) {
+        if (snackbar == null)
+            snackbar = Snackbar.make(findViewById(R.id.fab), "", Snackbar.LENGTH_SHORT);
+        if (snackbar.isShownOrQueued()) snackbar.dismiss();
+        snackbar.setText(s);
+        snackbar.show();
     }
 }

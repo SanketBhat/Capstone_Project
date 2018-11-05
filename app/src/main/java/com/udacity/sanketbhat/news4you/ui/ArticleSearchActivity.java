@@ -4,6 +4,9 @@ import android.app.SearchManager;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -19,9 +23,13 @@ import com.udacity.sanketbhat.news4you.adapter.InfiniteScrollListener;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
 import com.udacity.sanketbhat.news4you.model.Article;
 
-public class ArticleSearchActivity extends AppCompatActivity implements NewsListAdapter.OnItemClickListener, InfiniteScrollListener.LoadNextPageCallback, SwipeRefreshLayout.OnRefreshListener {
+public class ArticleSearchActivity extends AppCompatActivity implements NewsListAdapter.OnItemClickListener, InfiniteScrollListener.LoadNextPageCallback, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
 
     private SearchViewModel viewModel;
+    private static final String EXTRA_LIST_STATE = "listState";
+    private RecyclerView recyclerView;
+    private Snackbar snackbar;
+    private boolean isTablet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +38,19 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        isTablet = getResources().getBoolean(R.bool.tablet_layout);
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        if (isTablet) {
+            fab.setOnClickListener(this);
+        } else {
+            fab.hide();
+        }
+
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        RecyclerView recyclerView = findViewById(R.id.newsList);
+        recyclerView = findViewById(R.id.newsList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         NewsListAdapter adapter = new NewsListAdapter(null, this);
         recyclerView.setAdapter(adapter);
@@ -45,6 +62,24 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
 
         if (getIntent().getAction() != null && getIntent().getAction().equals(Intent.ACTION_SEARCH)) {
             handleSearch();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        if (layoutManager != null) {
+            outState.putParcelable(EXTRA_LIST_STATE, layoutManager.onSaveInstanceState());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        LinearLayoutManager layoutManager;
+        if (recyclerView != null && (layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager()) != null) {
+            layoutManager.onRestoreInstanceState(savedInstanceState.getParcelable(EXTRA_LIST_STATE));
         }
     }
 
@@ -85,7 +120,13 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
 
     @Override
     public void onItemClick(Article article, ImageView imageView) {
-        NewsDetailActivity.launch(this, article, this, imageView);
+        if (isTablet) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_detail_container, NewsDetailFragment.getInstance(article), NewsDetailFragment.FRAGMENT_TAG)
+                    .commit();
+        } else {
+            NewsDetailActivity.launch(this, article, this, imageView);
+        }
     }
 
     @Override
@@ -96,5 +137,34 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
     @Override
     public void onRefresh() {
 
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.fab) {
+            NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
+            if (fragment != null && fragment.getArticle() != null) {
+                Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                        .setType("text/plain")
+                        .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
+                        .setChooserTitle(R.string.share_intent_chooser_title)
+                        .getIntent();
+
+                if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
+                    startActivity(shareIntent);
+                } else {
+                    showSnackbar("No app available to share");
+                }
+            } else {
+                showSnackbar("Select an article to share");
+            }
+        }
+    }
+
+    private void showSnackbar(String s) {
+        if (snackbar == null) snackbar = Snackbar.make(recyclerView, "", Snackbar.LENGTH_SHORT);
+        if (snackbar.isShownOrQueued()) snackbar.dismiss();
+        snackbar.setText(s);
+        snackbar.show();
     }
 }

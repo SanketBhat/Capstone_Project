@@ -5,8 +5,10 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -17,6 +19,7 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.udacity.sanketbhat.news4you.Dependency;
@@ -27,14 +30,16 @@ import com.udacity.sanketbhat.news4you.model.Article;
 import com.udacity.sanketbhat.news4you.model.ArticleType;
 
 public class MainActivity extends ArticleBaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, InfiniteScrollListener.LoadNextPageCallback {
+        implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, InfiniteScrollListener.LoadNextPageCallback, View.OnClickListener {
 
     public static boolean isAppAlive = false;
+    private static final String EXTRA_LIST_STATE = "listState";
     private MainViewModel viewModel;
     private SwipeRefreshLayout swipeRefreshLayout;
     private NewsListAdapter adapter;
     private Snackbar snackbar;
     private RecyclerView recyclerView;
+    private boolean isTablet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,14 @@ public class MainActivity extends ArticleBaseActivity
         setSupportActionBar(toolbar);
 
         isAppAlive = true;
+        isTablet = getResources().getBoolean(R.bool.tablet_layout);
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        if (isTablet) {
+            fab.setOnClickListener(this);
+        } else {
+            fab.hide();
+        }
 
         setupNavigationDrawer(toolbar);
         setupRecyclerView();
@@ -55,6 +68,24 @@ public class MainActivity extends ArticleBaseActivity
         viewModel.getArticleList().observe(this, adapter::setArticles);
 
         Dependency.scheduleUpdateJob(getApplicationContext());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        if (layoutManager != null) {
+            outState.putParcelable(EXTRA_LIST_STATE, layoutManager.onSaveInstanceState());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        LinearLayoutManager layoutManager;
+        if (recyclerView != null && (layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager()) != null) {
+            layoutManager.onRestoreInstanceState(savedInstanceState.getParcelable(EXTRA_LIST_STATE));
+        }
     }
 
     @Override
@@ -175,12 +206,20 @@ public class MainActivity extends ArticleBaseActivity
 
     @Override
     public void onItemClick(Article article, ImageView imageView) {
-        NewsDetailActivity.launch(this, article, this, imageView);
+        if (isTablet) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_detail_container, NewsDetailFragment.getInstance(article), NewsDetailFragment.FRAGMENT_TAG)
+                    .commit();
+        } else {
+            NewsDetailActivity.launch(this, article, this, imageView);
+        }
     }
 
     @Override
     public void onRefresh() {
         viewModel.loadTopHeadlines(true);
+        //It will automatically shows loading when loading even occurs
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
@@ -192,5 +231,27 @@ public class MainActivity extends ArticleBaseActivity
     @Override
     public void loadNextPage() {
         viewModel.getNextTopHeadlines();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.fab) {
+            NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
+            if (fragment != null && fragment.getArticle() != null) {
+                Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                        .setType("text/plain")
+                        .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
+                        .setChooserTitle(R.string.share_intent_chooser_title)
+                        .getIntent();
+
+                if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
+                    startActivity(shareIntent);
+                } else {
+                    showSnackbar("No app available to share");
+                }
+            } else {
+                showSnackbar("Select an article to share");
+            }
+        }
     }
 }
