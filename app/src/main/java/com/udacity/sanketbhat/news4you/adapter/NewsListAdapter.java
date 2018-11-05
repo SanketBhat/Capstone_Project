@@ -14,6 +14,7 @@ import com.udacity.sanketbhat.news4you.model.Article;
 
 import java.util.List;
 
+//Common recyclerView adapter for news articles used throughout app
 public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsListViewHolder> {
 
     final private OnItemClickListener itemClickListener;

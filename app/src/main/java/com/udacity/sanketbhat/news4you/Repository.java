@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ import com.udacity.sanketbhat.news4you.database.ArticleDao;
 import com.udacity.sanketbhat.news4you.model.Article;
 import com.udacity.sanketbhat.news4you.model.ArticleType;
 import com.udacity.sanketbhat.news4you.model.NewsResponse;
+import com.udacity.sanketbhat.news4you.ui.ArticleBaseActivity;
 import com.udacity.sanketbhat.news4you.widget.NewsWidget;
 
 import java.util.ArrayList;
@@ -100,6 +102,8 @@ public class Repository {
         Log.d(TAG, "getTopHeadlines: Requesting page: " + pageNumber + " type= " + ArticleType.Type.getName(ArticleType.Type.TOP_HEAD));
 
         extras.putBoolean(LOADING_PAGE_TEMPLATE + ArticleType.Type.TOP_HEAD, true);
+        sendBroadcast(ArticleBaseActivity.EVENT_LOADING, ArticleType.Type.TOP_HEAD);
+
         apiService.getTopHeadlines("in", pageNumber, context.getString(R.string.NEWS_API_KEY))
                 .enqueue(new Callback<NewsResponse>() {
                     @Override
@@ -113,17 +117,21 @@ public class Repository {
                             if (newsResponse.getArticles() != null && newsResponse.getStatus().equalsIgnoreCase("ok")) {
                                 Toast.makeText(context, "Got fresh data from the server", Toast.LENGTH_SHORT).show();
                                 insertAllAsync(newsResponse.getArticles(), ArticleType.Type.TOP_HEAD);
+
                             } else {
                                 Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                                sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                             }
                         } else {
                             Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                            sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
                         Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                        sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                     }
                 });
     }
@@ -161,6 +169,8 @@ public class Repository {
         Log.d(TAG, "getArticlesByCategory: Requesting page: " + pageNumber + " type= " + ArticleType.Type.getName(type));
 
         extras.putBoolean(LOADING_PAGE_TEMPLATE + type, true);
+        sendBroadcast(ArticleBaseActivity.EVENT_LOADING, type);
+
         apiService.getArticlesByCategory("in", pageNumber, context.getString(R.string.NEWS_API_KEY), ArticleType.Type.getName(type))
                 .enqueue(new Callback<NewsResponse>() {
                     @Override
@@ -173,24 +183,22 @@ public class Repository {
 
                             if (newsResponse.getArticles() != null && newsResponse.getStatus().equalsIgnoreCase("ok")) {
                                 insertAllAsync(newsResponse.getArticles(), type);
+                                return;
                             }
-                            return;
                         }
+                        sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, type);
                         Toast.makeText(context, "Error when loading article type: " + ArticleType.Type.getName(type), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
+                        sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, type);
                         Toast.makeText(context, "Error when loading article type: " + ArticleType.Type.getName(type), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
 
-
-    /*public List<ArticleType> getArticleTypes(long id) {
-        return articleDao.getArticleTypes(id);
-    }*/
 
     private void storeTotalPages(int responseCount, int type) {
         int totalPages;
@@ -203,7 +211,14 @@ public class Repository {
     }
 
     private void insertAllAsync(Article[] articles, int type) {
-        executor.execute(() -> insertAll(articles, type));
+        executor.execute(() -> {
+            List<Article> insertedArticles = insertAll(articles, type);
+            if (insertedArticles != null && insertedArticles.size() > 0) {
+                sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FINISHED, type);
+            } else {
+                sendBroadcast(ArticleBaseActivity.EVENT_LOAD_EMPTY, type);
+            }
+        });
     }
 
     public List<Article> insertAll(Article[] articles, int type) {
@@ -243,6 +258,12 @@ public class Repository {
         }
         extras.putBoolean(LOADING_PAGE_TEMPLATE + type, false);
         return null;
+    }
+
+    private void sendBroadcast(String event, int type) {
+        Intent intent = new Intent(event);
+        intent.putExtra(ArticleBaseActivity.EXTRA_EVENT_ARTICLE_TYPE, type);
+        LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(intent);
     }
 
 }

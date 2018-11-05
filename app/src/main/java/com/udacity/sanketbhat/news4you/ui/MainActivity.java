@@ -4,15 +4,13 @@ import android.app.SearchManager;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityOptionsCompat;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -26,14 +24,17 @@ import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.InfiniteScrollListener;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
 import com.udacity.sanketbhat.news4you.model.Article;
+import com.udacity.sanketbhat.news4you.model.ArticleType;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends ArticleBaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, InfiniteScrollListener.LoadNextPageCallback {
 
     public static boolean isAppAlive = false;
     private MainViewModel viewModel;
     private SwipeRefreshLayout swipeRefreshLayout;
     private NewsListAdapter adapter;
+    private Snackbar snackbar;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +57,42 @@ public class MainActivity extends AppCompatActivity
         Dependency.scheduleUpdateJob(getApplicationContext());
     }
 
+    @Override
+    void onEvent(String event, int articleType) {
+        if (articleType == ArticleType.Type.TOP_HEAD) {
+            switch (event) {
+                case EVENT_LOADING:
+                    swipeRefreshLayout.setRefreshing(true);
+                    break;
+                case EVENT_LOAD_EMPTY:
+                    swipeRefreshLayout.setRefreshing(false);
+                    showSnackbar("No new articles added!");
+                    break;
+                case EVENT_LOAD_FAILED:
+                    swipeRefreshLayout.setRefreshing(false);
+                    showSnackbar("Failed to get news articles");
+                    break;
+                case EVENT_LOAD_FINISHED:
+                    swipeRefreshLayout.setRefreshing(false);
+                    showSnackbar("Updated with new news articles");
+                    break;
+            }
+        }
+    }
+
+    private void showSnackbar(String s) {
+        if (snackbar == null) snackbar = Snackbar.make(recyclerView, "", Snackbar.LENGTH_SHORT);
+        if (snackbar.isShownOrQueued()) snackbar.dismiss();
+        snackbar.setText(s);
+        snackbar.show();
+    }
+
     private void setupRecyclerView() {
         adapter = new NewsListAdapter(null, this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
 
-        RecyclerView recyclerView = findViewById(R.id.newsList);
+
+        recyclerView = findViewById(R.id.newsList);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
         recyclerView.addOnScrollListener(new InfiniteScrollListener(layoutManager, this));
@@ -143,18 +175,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onItemClick(Article article, ImageView imageView) {
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView, getString(R.string.image_transition_name));
-        Intent intent = new Intent(this, NewsDetailActivity.class);
-        intent.putExtra("article", article);
-        startActivity(intent, options.toBundle());
+        NewsDetailActivity.launch(this, article, this, imageView);
     }
 
     @Override
     public void onRefresh() {
         viewModel.loadTopHeadlines(true);
-        swipeRefreshLayout.setRefreshing(true);
-        Handler handler = new Handler();
-        handler.postDelayed(() -> swipeRefreshLayout.setRefreshing(false), 3000);
     }
 
     @Override

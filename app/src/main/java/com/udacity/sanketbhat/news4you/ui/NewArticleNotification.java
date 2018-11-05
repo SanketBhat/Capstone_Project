@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
@@ -45,8 +44,6 @@ public class NewArticleNotification {
     public static void notify(final Context context,
                               List<Article> newArticles, final int number) {
         createChannel(context);
-        final Resources res = context.getResources();
-
 
         final String notificationTitle = context.getString(R.string.new_article_notification_title_template);
 

@@ -3,7 +3,6 @@ package com.udacity.sanketbhat.news4you.model;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
@@ -11,8 +10,6 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
-
-import java.util.List;
 
 @Entity(tableName = "articles", indices = {@Index(value = {"title", "url", "published_at"}, unique = true)})
 public class Article implements Parcelable {
@@ -51,15 +48,13 @@ public class Article implements Parcelable {
     @SerializedName("urlToImage")
     private String urlToImage;
 
+
     @ColumnInfo(name = "published_at")
     @SerializedName("publishedAt")
     private String publishedAt;
 
     @SerializedName("content")
     private String content;
-
-    @Ignore
-    private List<ArticleType> types;
 
     public Article() {
 
@@ -74,14 +69,6 @@ public class Article implements Parcelable {
         urlToImage = in.readString();
         publishedAt = in.readString();
         content = in.readString();
-    }
-
-    public List<ArticleType> getTypes() {
-        return types;
-    }
-
-    public void setTypes(List<ArticleType> types) {
-        this.types = types;
     }
 
     public int getId() {

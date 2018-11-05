@@ -24,6 +24,13 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Dependency {
+    private static final int NETWORK_CONNECT_TIMEOUT_MILLIS = 10000;//10 seconds
+    private static final int NETWORK_READ_TIMEOUT_MILLIS = 15000; //15 seconds
+    private static final String SERVER_BASE_URL = "http://newsapi.org/v2/";
+    private static final String DATABASE_FILE_NAME = "article.db";
+    private static final String TAG_ARTICLE_UPDATE_JOB = "articleUpdateJob";
+    private static final String TAG_MAINTENANCE_JOB = "maintenanceJob";
+
     private static final Object LOCK = new Object();
     private static NewsAPIService apiService;
     private static ArticleDatabase database;
@@ -38,12 +45,12 @@ public class Dependency {
         if (apiService == null) {
             synchronized (LOCK) {
                 OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                        .connectTimeout(30000, TimeUnit.MILLISECONDS)
-                        .readTimeout(20000, TimeUnit.MILLISECONDS)
+                        .connectTimeout(NETWORK_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .readTimeout(NETWORK_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                         .retryOnConnectionFailure(true)
                         .build();
                 Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl("http://newsapi.org/v2/")
+                        .baseUrl(SERVER_BASE_URL)
                         .client(okHttpClient)
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
@@ -69,7 +76,7 @@ public class Dependency {
     private static ArticleDatabase getDatabase(Context context) {
         if (database == null) {
             synchronized (LOCK) {
-                database = Room.databaseBuilder(context.getApplicationContext(), ArticleDatabase.class, "article.db")
+                database = Room.databaseBuilder(context.getApplicationContext(), ArticleDatabase.class, DATABASE_FILE_NAME)
                         .build();
             }
         }
@@ -82,10 +89,10 @@ public class Dependency {
 
             Job updateJob = jobDispatcher.newJobBuilder()
                     .setService(NewsUpdateService.class)
-                    .setTag("temporary-tag")
+                    .setTag(TAG_ARTICLE_UPDATE_JOB)
                     .setRecurring(true)
                     .setLifetime(Lifetime.FOREVER)
-                    .setTrigger(Trigger.executionWindow(0, 60))
+                    .setTrigger(Trigger.executionWindow(0, 60))//Only for testing
                     .setReplaceCurrent(true)
                     .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
                     .setConstraints(Constraint.ON_ANY_NETWORK)
@@ -94,17 +101,16 @@ public class Dependency {
 
             Job maintenanceJob = jobDispatcher.newJobBuilder()
                     .setService(MaintenanceService.class)
-                    .setTag("temporary-tag1")
+                    .setTag(TAG_MAINTENANCE_JOB)
                     .setRecurring(true)
                     .setLifetime(Lifetime.FOREVER)
-                    .setTrigger(Trigger.executionWindow(43200000, 86400000))
+                    .setTrigger(Trigger.executionWindow(43200000, 86400000))//between 12 - 24 hours
                     .setReplaceCurrent(false)
                     .setRetryStrategy(RetryStrategy.DEFAULT_LINEAR)
                     .build();
             jobDispatcher.mustSchedule(maintenanceJob);
 
             scheduled = true;
-
         }
     }
 }

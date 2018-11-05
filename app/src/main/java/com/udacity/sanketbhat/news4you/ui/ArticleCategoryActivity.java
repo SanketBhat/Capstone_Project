@@ -4,15 +4,12 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -20,8 +17,11 @@ import android.view.MenuItem;
 
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.ArticleCategoryPagerAdapter;
+import com.udacity.sanketbhat.news4you.model.ArticleType;
 
-public class ArticleCategoryActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ArticleCategoryActivity extends ArticleBaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,18 +44,31 @@ public class ArticleCategoryActivity extends AppCompatActivity implements Naviga
 
         ArticleCategoryPagerAdapter mArticleCategoryPagerAdapter = new ArticleCategoryPagerAdapter(getSupportFragmentManager());
 
-        ViewPager mViewPager = findViewById(R.id.container);
+        mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mArticleCategoryPagerAdapter);
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+    }
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
-
+    @Override
+    void onEvent(String event, int articleType) {
+        ArticleCategoryPagerAdapter adapter = (ArticleCategoryPagerAdapter) mViewPager.getAdapter();
+        if (adapter != null) {
+            int position = -1;
+            for (int i = 0; i < adapter.getCount(); i++)
+                if (ArticleType.Type.types[i] == articleType) {
+                    position = i;
+                    break;
+                }
+            if (position >= 0) {
+                ArticleCategoryFragment fragment = (ArticleCategoryFragment) getSupportFragmentManager()
+                        .findFragmentByTag(adapter.fragmentTags[position]);
+                if (fragment != null) fragment.onEvent(event, articleType);
+            }
+        }
     }
 
 

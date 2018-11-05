@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+//RecyclerView's scroll listener helps to load next page if user is at the end of current page
 public class InfiniteScrollListener extends RecyclerView.OnScrollListener {
     private LoadNextPageCallback loadNextPageCallback;
     private LinearLayoutManager layoutManager;
