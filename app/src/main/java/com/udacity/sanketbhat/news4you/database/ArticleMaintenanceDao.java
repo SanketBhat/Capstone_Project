@@ -9,7 +9,7 @@ public interface ArticleMaintenanceDao {
             "select a.id from articles a, article_type at " +
             "where at.id = a.id and at.type = :type " +
             "order by published_at desc " +
-            "limit 20,0" +
+            "limit 20" +
             ")")
     void deleteOldArticles(int type);
 }

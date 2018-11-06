@@ -10,6 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,8 +18,9 @@ import com.squareup.picasso.Picasso;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.model.Article;
 import com.udacity.sanketbhat.news4you.utils.DateAndTimeUtils;
+import com.udacity.sanketbhat.news4you.utils.PreferenceUtils;
 
-public class NewsDetailFragment extends Fragment {
+public class NewsDetailFragment extends Fragment implements View.OnClickListener {
 
     public static final String FRAGMENT_TAG = "detailFragment";
     private Article article;
@@ -56,6 +58,7 @@ public class NewsDetailFragment extends Fragment {
             TextView content = rootView.findViewById(R.id.newsContent);
             TextView url = rootView.findViewById(R.id.newsURL);
             ImageView imageView = rootView.findViewById(R.id.imageTablet);
+            Button button = rootView.findViewById(R.id.button2);
 
             if (imageView != null) {
                 Picasso.with(getContext())
@@ -66,16 +69,18 @@ public class NewsDetailFragment extends Fragment {
             }
 
             url.setText(article.getUrl());
-            url.setOnClickListener(v -> {
-                CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
-                intentBuilder.setToolbarColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
-                CustomTabsIntent customTabsIntent = intentBuilder.build();
-                customTabsIntent.launchUrl(getContext(), Uri.parse(article.getUrl()));
-            });
+            url.setOnClickListener(this);
+            button.setOnClickListener(this);
             title.setText(article.getTitle());
             author.setText(article.getAuthor());
-            String dateString = DateAndTimeUtils.getDateDisplayString(article.getPublishedAt());
+
+            String dateString;
+            if (PreferenceUtils.getPrefRelatedTime(getContext()))
+                dateString = DateAndTimeUtils.getRelativeDisplayString(article.getPublishedAt());
+            else
+                dateString = DateAndTimeUtils.getDateDisplayString(article.getPublishedAt());
             published.setText(dateString);
+
             desc.setText(article.getDescription());
             content.setText(article.getContent());
         }
@@ -84,5 +89,13 @@ public class NewsDetailFragment extends Fragment {
 
     public Article getArticle() {
         return article;
+    }
+
+    @Override
+    public void onClick(View v) {
+        CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
+        intentBuilder.setToolbarColor(ContextCompat.getColor(v.getContext(), R.color.colorPrimary));
+        CustomTabsIntent customTabsIntent = intentBuilder.build();
+        customTabsIntent.launchUrl(v.getContext(), Uri.parse(article.getUrl()));
     }
 }

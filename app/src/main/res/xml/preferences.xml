@@ -1,0 +1,29 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="@bool/pref_default_relative_time"
+        android:icon="@drawable/ic_pref_relative_time"
+        android:key="@string/pref_key_relative_time"
+        android:summary="@string/pref_summary_relative_time"
+        android:title="@string/pref_title_relative_time" />
+
+
+    <ListPreference
+        android:defaultValue="@string/pref_default_update_frequency"
+        android:entries="@array/pref_update_frequency_titles"
+        android:entryValues="@array/pref_update_frequency_values"
+        android:icon="@drawable/ic_pref_update_frequency"
+        android:key="@string/pref_key_update_frequency"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@string/pref_positive_button_text_update_frequency"
+        android:summary="%s"
+        android:title="@string/pref_title_update_frequency" />
+
+    <SwitchPreference
+        android:defaultValue="@bool/pref_default_notifications"
+        android:icon="@drawable/ic_pref_notifications"
+        android:key="@string/pref_key_notifications"
+        android:summary="@string/pref_summary_notifications"
+        android:title="@string/pref_title_notifications" />
+
+</PreferenceScreen>

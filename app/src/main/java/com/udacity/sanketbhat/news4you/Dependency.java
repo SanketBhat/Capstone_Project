@@ -16,6 +16,7 @@ import com.udacity.sanketbhat.news4you.database.ArticleDatabase;
 import com.udacity.sanketbhat.news4you.database.ArticleMaintenanceDao;
 import com.udacity.sanketbhat.news4you.service.MaintenanceService;
 import com.udacity.sanketbhat.news4you.service.NewsUpdateService;
+import com.udacity.sanketbhat.news4you.utils.PreferenceUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -83,21 +84,26 @@ public class Dependency {
         return database;
     }
 
-    public static void scheduleUpdateJob(Context context) {
-        if (!scheduled) {
+    public static void scheduleUpdateJob(Context context, boolean onDemand) {
+        if (!scheduled || onDemand) {
             FirebaseJobDispatcher jobDispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
 
-            Job updateJob = jobDispatcher.newJobBuilder()
-                    .setService(NewsUpdateService.class)
-                    .setTag(TAG_ARTICLE_UPDATE_JOB)
-                    .setRecurring(true)
-                    .setLifetime(Lifetime.FOREVER)
-                    .setTrigger(Trigger.executionWindow(0, 60))//Only for testing
-                    .setReplaceCurrent(true)
-                    .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-                    .setConstraints(Constraint.ON_ANY_NETWORK)
-                    .build();
-            jobDispatcher.mustSchedule(updateJob);
+            int updateFrequency = PreferenceUtils.getPrefUpdateFrequency(context);
+            if (updateFrequency == -1) {
+                jobDispatcher.cancel(TAG_ARTICLE_UPDATE_JOB);
+            } else {
+                Job updateJob = jobDispatcher.newJobBuilder()
+                        .setService(NewsUpdateService.class)
+                        .setTag(TAG_ARTICLE_UPDATE_JOB)
+                        .setRecurring(true)
+                        .setLifetime(Lifetime.FOREVER)
+                        .setTrigger(Trigger.executionWindow(0, updateFrequency * 60 * 60))
+                        .setReplaceCurrent(true)
+                        .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+                        .setConstraints(Constraint.ON_ANY_NETWORK)
+                        .build();
+                jobDispatcher.mustSchedule(updateJob);
+            }
 
             Job maintenanceJob = jobDispatcher.newJobBuilder()
                     .setService(MaintenanceService.class)

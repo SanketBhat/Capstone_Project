@@ -127,7 +127,8 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
             startActivity(intent);
             finish();
         } else if (id == R.id.nav_settings) {
-
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_about) {
 
         }

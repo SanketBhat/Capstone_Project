@@ -67,7 +67,7 @@ public class MainActivity extends ArticleBaseActivity
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getArticleList().observe(this, adapter::setArticles);
 
-        Dependency.scheduleUpdateJob(getApplicationContext());
+        Dependency.scheduleUpdateJob(getApplicationContext(), false);
     }
 
     @Override
@@ -194,7 +194,8 @@ public class MainActivity extends ArticleBaseActivity
             Intent intent = new Intent(this, ArticleCategoryActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
-
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_about) {
 
         }

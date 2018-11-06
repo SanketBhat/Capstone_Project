@@ -14,6 +14,7 @@ import com.udacity.sanketbhat.news4you.model.ArticleType;
 import com.udacity.sanketbhat.news4you.model.NewsResponse;
 import com.udacity.sanketbhat.news4you.ui.MainActivity;
 import com.udacity.sanketbhat.news4you.ui.NewArticleNotification;
+import com.udacity.sanketbhat.news4you.utils.PreferenceUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,9 +41,10 @@ public class NewsUpdateService extends JobService {
                         if (response != null && response.getArticles() != null) {
                             List<Article> insertedArticles = repository.insertAll(response.getArticles(), ArticleType.Type.TOP_HEAD);
                             if (insertedArticles != null && insertedArticles.size() > 0) {
-                                NewArticleNotification.notify(getApplicationContext(), insertedArticles,
-                                        insertedArticles.size());
-
+                                if (PreferenceUtils.getPrefEnableNotification(getApplicationContext())) {
+                                    NewArticleNotification.notify(getApplicationContext(), insertedArticles,
+                                            insertedArticles.size());
+                                }
                             }
                             return true;
                         } else {

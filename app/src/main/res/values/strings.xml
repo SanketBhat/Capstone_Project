@@ -40,4 +40,38 @@
     <string name="app_icon_description">App Icon</string>
     <string name="server_attribution_splash_screen">Powered by NewsAPI.org</string>
     <string name="share_intent_chooser_title">Share article using…</string>
+    <string name="news_detail_read_more_button">Read more</string>
+    <string name="news_detail_image_desc">News Image</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+    <string name="pref_title_relative_time">Show relative time</string>
+    <string name="pref_summary_relative_time">If enabled, shows time relative to current time (ex: yesterday)</string>
+    <string name="pref_key_relative_time" translatable="false">relative_time</string>
+
+    <string name="pref_title_update_frequency">Update check frequency</string>
+    <string name="pref_key_update_frequency" translatable="false">update_frequency</string>
+    <string name="pref_positive_button_text_update_frequency">OK</string>
+    <string name="pref_default_update_frequency">15</string>
+    <string-array name="pref_update_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_update_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string name="pref_title_notifications">New articles notifications</string>
+    <string name="pref_summary_notifications">Allow notifications to get notified when new articles are available</string>
+    <string name="pref_key_notifications" translatable="false">article_notifications</string>
+
 </resources>

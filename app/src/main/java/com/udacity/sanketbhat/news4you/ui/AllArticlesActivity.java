@@ -112,7 +112,8 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
             startActivity(intent);
             finish();
         } else if (id == R.id.nav_settings) {
-
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_about) {
 
         }

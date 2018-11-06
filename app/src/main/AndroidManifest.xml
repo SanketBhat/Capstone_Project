@@ -70,6 +70,10 @@
                 android:resource="@xml/searchable" />
         </activity>
 
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/title_activity_settings" />
+
         <!-- BroadcastReceivers -->
         <receiver android:name=".widget.NewsWidget">
             <intent-filter>
