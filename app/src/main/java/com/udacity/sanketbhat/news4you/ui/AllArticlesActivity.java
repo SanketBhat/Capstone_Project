@@ -30,13 +30,13 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
     private RecyclerView recyclerView;
     private boolean isTablet;
     private Snackbar snackbar;
+    private NewsListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_articles);
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("All Articles");
         setSupportActionBar(toolbar);
 
         isTablet = getResources().getBoolean(R.bool.tablet_layout);
@@ -48,6 +48,25 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
             fab.hide();
         }
 
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(() -> swipeRefreshLayout.setRefreshing(false));
+
+        setupNavigationDrawer(toolbar);
+        setupRecyclerView();
+
+        AllArticlesViewModel viewModel = ViewModelProviders.of(this).get(AllArticlesViewModel.class);
+        viewModel.getAllArticles().observe(this, adapter::setArticles);
+    }
+
+    private void setupRecyclerView() {
+        recyclerView = findViewById(R.id.newsList);
+        adapter = new NewsListAdapter(null, this);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+        recyclerView.setHasFixedSize(true);
+    }
+
+    private void setupNavigationDrawer(Toolbar toolbar) {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -57,18 +76,6 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().findItem(R.id.nav_all_articles).setChecked(true);
-
-        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(() -> swipeRefreshLayout.setRefreshing(false));
-
-        recyclerView = findViewById(R.id.newsList);
-        NewsListAdapter adapter = new NewsListAdapter(null, this);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
-        recyclerView.setHasFixedSize(true);
-
-        AllArticlesViewModel viewModel = ViewModelProviders.of(this).get(AllArticlesViewModel.class);
-        viewModel.getAllArticles().observe(this, adapter::setArticles);
     }
 
     @Override
@@ -128,7 +135,7 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
             NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
             if (fragment != null && fragment.getArticle() != null) {
                 Intent shareIntent = ShareCompat.IntentBuilder.from(this)
-                        .setType("text/plain")
+                        .setType(getString(R.string.share_text_mime_type))
                         .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
                         .setChooserTitle(R.string.share_intent_chooser_title)
                         .getIntent();
@@ -136,10 +143,10 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
                 if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
                     startActivity(shareIntent);
                 } else {
-                    showSnackbar("No app available to share");
+                    showSnackbar(getString(R.string.share_article_no_app_to_share));
                 }
             } else {
-                showSnackbar("Select an article to share");
+                showSnackbar(getString(R.string.share_article_no_article_selected));
             }
         }
     }

@@ -34,7 +34,6 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
         setContentView(R.layout.activity_article_category);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("News Categories");
         setSupportActionBar(toolbar);
 
         boolean isTablet = getResources().getBoolean(R.bool.tablet_layout);
@@ -46,16 +45,11 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
             fab.hide();
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
+        setupNavigationDrawer(toolbar);
+        setupViewPager();
+    }
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        navigationView.getMenu().findItem(R.id.nav_categories).setChecked(true);
-
+    private void setupViewPager() {
         ArticleCategoryPagerAdapter mArticleCategoryPagerAdapter = new ArticleCategoryPagerAdapter(getSupportFragmentManager());
 
         mViewPager = findViewById(R.id.container);
@@ -65,6 +59,18 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
         tabLayout.setupWithViewPager(mViewPager);
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+    }
+
+    private void setupNavigationDrawer(Toolbar toolbar) {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().findItem(R.id.nav_categories).setChecked(true);
     }
 
     @Override
@@ -100,21 +106,6 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -146,7 +137,7 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
                         .findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG + adapter.fragmentTags[mViewPager.getCurrentItem()]);
                 if (fragment != null && fragment.getArticle() != null) {
                     Intent shareIntent = ShareCompat.IntentBuilder.from(this)
-                            .setType("text/plain")
+                            .setType(getString(R.string.share_text_mime_type))
                             .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
                             .setChooserTitle(R.string.share_intent_chooser_title)
                             .getIntent();
@@ -154,10 +145,10 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
                     if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
                         startActivity(shareIntent);
                     } else {
-                        showSnackbar("No app available to share");
+                        showSnackbar(getString(R.string.share_article_no_app_to_share));
                     }
                 } else {
-                    showSnackbar("Select an article to share");
+                    showSnackbar(getString(R.string.share_article_no_article_selected));
                 }
             }
         }

@@ -113,7 +113,6 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
     }
 
     private void setupRecyclerView(View rootView) {
-
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         adapter = new NewsListAdapter(null, this);
 
@@ -121,8 +120,6 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addOnScrollListener(new InfiniteScrollListener(layoutManager, this));
         recyclerView.setAdapter(adapter);
-
-
     }
 
     @Override
@@ -160,17 +157,17 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
 
                 case ArticleBaseActivity.EVENT_LOAD_EMPTY:
                     setRefreshing(false);
-                    showSnackbar("No new news articles");
+                    showSnackbar(getString(R.string.text_article_update_empty));
                     break;
 
                 case ArticleBaseActivity.EVENT_LOAD_FINISHED:
                     setRefreshing(false);
-                    showSnackbar("Updated with new articles");
+                    showSnackbar(getString(R.string.text_article_update_success));
                     break;
 
                 case ArticleBaseActivity.EVENT_LOAD_FAILED:
                     setRefreshing(false);
-                    showSnackbar("Failed to load new articles");
+                    showSnackbar(getString(R.string.text_article_update_fail));
             }
         }
     }

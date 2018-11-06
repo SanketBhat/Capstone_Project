@@ -30,9 +30,6 @@ public interface ArticleDao {
     @Query("select id from articles where title = :title and url = :url and published_at = :publishedAt")
     long getArticleId(String title, String url, String publishedAt);
 
-    /*@Query("select * from article_type where id = :id")
-    List<ArticleType> getArticleTypes(long id);*/
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("select a.id, title from articles a, article_type at  where a.id = at.id and at.type =" + ArticleType.Type.TOP_HEAD + " order by published_at desc")
     List<Article> getHeadlines();

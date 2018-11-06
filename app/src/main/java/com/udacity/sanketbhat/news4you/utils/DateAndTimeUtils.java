@@ -9,14 +9,7 @@ import java.util.TimeZone;
 
 
 public class DateAndTimeUtils {
-    private static final String TAG = "DateAndTimeUtils";
 
-    /**
-     * Default normal string to display date and time
-     *
-     * @param dateString It should be in the format yyyy-MM-ddThh:mm:ssZ
-     * @return Local date string without zone
-     */
     public static String getDateDisplayString(String dateString) {
         return getLocalDateAndTime(dateString);
     }

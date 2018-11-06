@@ -97,15 +97,15 @@ public class MainActivity extends ArticleBaseActivity
                     break;
                 case EVENT_LOAD_EMPTY:
                     swipeRefreshLayout.setRefreshing(false);
-                    showSnackbar("No new articles added!");
+                    showSnackbar(getString(R.string.text_article_update_empty));
                     break;
                 case EVENT_LOAD_FAILED:
                     swipeRefreshLayout.setRefreshing(false);
-                    showSnackbar("Failed to get news articles");
+                    showSnackbar(getString(R.string.text_article_update_fail));
                     break;
                 case EVENT_LOAD_FINISHED:
                     swipeRefreshLayout.setRefreshing(false);
-                    showSnackbar("Updated with new news articles");
+                    showSnackbar(getString(R.string.text_article_update_success));
                     break;
             }
         }
@@ -164,21 +164,6 @@ public class MainActivity extends ArticleBaseActivity
             searchView.setSubmitButtonEnabled(true);
         }
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -240,7 +225,7 @@ public class MainActivity extends ArticleBaseActivity
             NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
             if (fragment != null && fragment.getArticle() != null) {
                 Intent shareIntent = ShareCompat.IntentBuilder.from(this)
-                        .setType("text/plain")
+                        .setType(getString(R.string.share_text_mime_type))
                         .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
                         .setChooserTitle(R.string.share_intent_chooser_title)
                         .getIntent();
@@ -248,10 +233,10 @@ public class MainActivity extends ArticleBaseActivity
                 if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
                     startActivity(shareIntent);
                 } else {
-                    showSnackbar("No app available to share");
+                    showSnackbar(getString(R.string.share_article_no_app_to_share));
                 }
             } else {
-                showSnackbar("Select an article to share");
+                showSnackbar(getString(R.string.share_article_no_article_selected));
             }
         }
     }

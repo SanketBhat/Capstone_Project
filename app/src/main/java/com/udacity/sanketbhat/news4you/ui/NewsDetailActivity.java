@@ -26,39 +26,6 @@ public class NewsDetailActivity extends AppCompatActivity implements View.OnClic
     private Article article;
     private Snackbar snackbar;
 
-    public static void launch(@NonNull Context context, @NonNull Article article,
-                              @Nullable Activity activity, @Nullable ImageView imageView) {
-
-        Intent intent = new Intent(context, NewsDetailActivity.class);
-        intent.putExtra(NewsDetailActivity.EXTRA_ARTICLE, article);
-
-        //If possible make shared element transition
-        if (activity != null && imageView != null) {
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, imageView,
-                    context.getString(R.string.image_transition_name));
-
-            context.startActivity(intent, options.toBundle());
-            return;
-        }
-
-        context.startActivity(intent);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_news_detail, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            supportFinishAfterTransition();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,26 +59,37 @@ public class NewsDetailActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.fab) {
-            NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
-            if (fragment != null && fragment.getArticle() != null) {
-                Intent shareIntent = ShareCompat.IntentBuilder.from(this)
-                        .setType("text/plain")
-                        .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
-                        .setChooserTitle(R.string.share_intent_chooser_title)
-                        .getIntent();
+    public static void launch(@NonNull Context context, @NonNull Article article,
+                              @Nullable Activity activity, @Nullable ImageView imageView) {
 
-                if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
-                    startActivity(shareIntent);
-                } else {
-                    showSnackbar("No app available to share");
-                }
-            } else {
-                showSnackbar("Select an article to share");
-            }
+        Intent intent = new Intent(context, NewsDetailActivity.class);
+        intent.putExtra(NewsDetailActivity.EXTRA_ARTICLE, article);
+
+        //If possible make shared element transition
+        if (activity != null && imageView != null) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, imageView,
+                    context.getString(R.string.image_transition_name));
+
+            context.startActivity(intent, options.toBundle());
+            return;
         }
+
+        context.startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_news_detail, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            supportFinishAfterTransition();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void showSnackbar(String s) {
@@ -120,5 +98,27 @@ public class NewsDetailActivity extends AppCompatActivity implements View.OnClic
         if (snackbar.isShownOrQueued()) snackbar.dismiss();
         snackbar.setText(s);
         snackbar.show();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.fab) {
+            NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
+            if (fragment != null && fragment.getArticle() != null) {
+                Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                        .setType(getString(R.string.share_text_mime_type))
+                        .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
+                        .setChooserTitle(R.string.share_intent_chooser_title)
+                        .getIntent();
+
+                if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
+                    startActivity(shareIntent);
+                } else {
+                    showSnackbar(getString(R.string.share_article_no_app_to_share));
+                }
+            } else {
+                showSnackbar(getString(R.string.share_article_no_article_selected));
+            }
+        }
     }
 }

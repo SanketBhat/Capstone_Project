@@ -19,6 +19,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+@SuppressWarnings("WeakerAccess")
 public class SearchViewModel extends AndroidViewModel {
     private NewsAPIService apiService;
     private MutableLiveData<List<Article>> searchResults;

@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.udacity.sanketbhat.news4you.api.NewsAPIService;
 import com.udacity.sanketbhat.news4you.database.ArticleDao;
@@ -36,7 +34,6 @@ public class Repository {
     private static final String LAST_REFRESH_TEMPLATE = "last_refresh_";
     private static final String LOADING_PAGE_TEMPLATE = "loading_";
     private static final long AUTO_REFRESH_INTERVAL = 120000;// Two minutes(in milliseconds)
-    private static final String TAG = "Repository";
     @SuppressLint("StaticFieldLeak") //It is OK to use Application Context
     private static Repository mInstance;
     //Executor used for database operations
@@ -99,8 +96,6 @@ public class Repository {
     }
 
     private void getTopHeadlines(int pageNumber) {
-        Log.d(TAG, "getTopHeadlines: Requesting page: " + pageNumber + " type= " + ArticleType.Type.getName(ArticleType.Type.TOP_HEAD));
-
         extras.putBoolean(LOADING_PAGE_TEMPLATE + ArticleType.Type.TOP_HEAD, true);
         sendBroadcast(ArticleBaseActivity.EVENT_LOADING, ArticleType.Type.TOP_HEAD);
 
@@ -115,22 +110,18 @@ public class Repository {
                             storeCurrentPage(call.request().url().toString(), ArticleType.Type.TOP_HEAD);
 
                             if (newsResponse.getArticles() != null && newsResponse.getStatus().equalsIgnoreCase("ok")) {
-                                Toast.makeText(context, "Got fresh data from the server", Toast.LENGTH_SHORT).show();
                                 insertAllAsync(newsResponse.getArticles(), ArticleType.Type.TOP_HEAD);
 
                             } else {
-                                Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
                                 sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                             }
                         } else {
-                            Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
                             sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
-                        Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
                         sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                     }
                 });
@@ -159,15 +150,12 @@ public class Repository {
     public void getNextArticleByCategory(int type) {
         if (isNotLoading(type)) {
             int nextPage = getNextPageNumber(type);
-            Log.e(TAG, "getNextArticleByCategory: not loading next page yet; next page number: " + nextPage);
             if (nextPage != -1)
                 getArticlesByCategory(type, nextPage);
         }
     }
 
     private void getArticlesByCategory(int type, int pageNumber) {
-        Log.d(TAG, "getArticlesByCategory: Requesting page: " + pageNumber + " type= " + ArticleType.Type.getName(type));
-
         extras.putBoolean(LOADING_PAGE_TEMPLATE + type, true);
         sendBroadcast(ArticleBaseActivity.EVENT_LOADING, type);
 
@@ -187,17 +175,14 @@ public class Repository {
                             }
                         }
                         sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, type);
-                        Toast.makeText(context, "Error when loading article type: " + ArticleType.Type.getName(type), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
                         sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, type);
-                        Toast.makeText(context, "Error when loading article type: " + ArticleType.Type.getName(type), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
-
 
 
     private void storeTotalPages(int responseCount, int type) {
@@ -229,7 +214,6 @@ public class Repository {
                 long id = articleDao.insert(article);
                 if (id == -1) {
                     id = articleDao.getArticleId(article.getTitle(), article.getUrl(), article.getPublishedAt());
-                    Log.e("Retrieved id", "" + id);
                 } else {
                     insertCount++;
                     article.setId((int) id);

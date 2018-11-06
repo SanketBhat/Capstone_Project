@@ -51,6 +51,7 @@
         </activity>
         <activity
             android:name=".ui.AllArticlesActivity"
+            android:label="@string/title_activity_article_all"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.app.default_searchable"

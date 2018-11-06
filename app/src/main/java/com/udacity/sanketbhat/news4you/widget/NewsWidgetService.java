@@ -30,18 +30,8 @@ public class NewsWidgetService extends RemoteViewsService {
         }
 
         @Override
-        public void onCreate() {
-
-        }
-
-        @Override
         public void onDataSetChanged() {
             articles = articleDao.getHeadlines();
-        }
-
-        @Override
-        public void onDestroy() {
-
         }
 
         @Override
@@ -59,11 +49,6 @@ public class NewsWidgetService extends RemoteViewsService {
         }
 
         @Override
-        public RemoteViews getLoadingView() {
-            return null;
-        }
-
-        @Override
         public int getViewTypeCount() {
             return 1;
         }
@@ -76,6 +61,19 @@ public class NewsWidgetService extends RemoteViewsService {
         @Override
         public boolean hasStableIds() {
             return true;
+        }
+
+        @Override
+        public void onCreate() {
+        }
+
+        @Override
+        public void onDestroy() {
+        }
+
+        @Override
+        public RemoteViews getLoadingView() {
+            return null;
         }
     }
 }

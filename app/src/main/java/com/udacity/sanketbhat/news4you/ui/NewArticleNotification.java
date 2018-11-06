@@ -14,17 +14,8 @@ import com.udacity.sanketbhat.news4you.model.Article;
 
 import java.util.List;
 
-/**
- * Helper class for showing and canceling new article
- * notifications.
- * <p>
- * This class makes heavy use of the {@link NotificationCompat.Builder} helper
- * class to create notifications in a backward-compatible way.
- */
 public class NewArticleNotification {
-    /**
-     * The unique identifier for this type of notification.
-     */
+
     private static final String NOTIFICATION_TAG = "NewArticle";
     private static final String NOTIFICATION_CHANNEL_ID = "newArticlesChannelId";
     private static final String NOTIFICATION_CHANNEL_NAME = "Article Updates";
@@ -33,7 +24,7 @@ public class NewArticleNotification {
     private static void createChannel(Context context) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("Notifies user about new news updates when app is in background");
+            channel.setDescription(context.getString(R.string.notification_channel_description));
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
@@ -67,7 +58,7 @@ public class NewArticleNotification {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
                 // Set ticker text (preview) information for this notification.
-                .setTicker("News update")
+                .setTicker(context.getString(R.string.notification_title))
 
                 // Show a number. This is useful when stacking notifications of
                 // a single type.

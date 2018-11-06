@@ -1,21 +1,21 @@
 <resources>
+    <!--Activity titles-->
     <string name="app_name">News 4 You</string>
+    <string name="title_activity_news_detail">News Detail</string>
+    <string name="title_activity_article_category">News Categories</string>
+    <string name="title_activity_article_search">Search Articles</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="title_activity_article_all">All Articles</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Related to Navigation Drawer-->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="news_thumbnail">News Thumbnail</string>
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-    <string name="news_thumbnail">News Thumbnail</string>
-    <string name="title_activity_news_detail">News Detail</string>
-    <string name="image_desc_news">News Image</string>
-    <string name="news_source_unknown">Unknown source</string>
-    <string name="image_transition_name">articleImageTransition</string>
-    <string name="title_activity_article_category">ArticleCategoryActivity</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
-    <string name="tab_text_3">Tab 3</string>
-    <string name="section_format">Hello World from section: %1$d</string>
     <string name="nav_title_top_headlines">Top Headlines</string>
     <string name="nav_title_all_articles">All Articles</string>
     <string name="nav_title_categories">Categories</string>
@@ -23,26 +23,35 @@
     <string name="nav_title_about">About</string>
     <string name="nav_group_title_others">Others</string>
     <string name="nav_group_title_browse">Browse</string>
-    <string name="appwidget_text">EXAMPLE</string>
-    <string name="add_widget">Add widget</string>
+
+    <!-- Related to App Widget-->
     <string name="empty_message_text_news_widget">No news articles!</string>
     <string name="description_divider">Divider</string>
+
+    <!--Related to notification-->
+    <string name="notification_channel_description">Notifies user about new news updates when app is in background</string>
+    <string name="notification_title">News update</string>
+
+    <!-- Others-->
+    <string name="image_desc_news">News Image</string>
+    <string name="news_source_unknown">Unknown source</string>
+    <string name="image_transition_name">articleImageTransition</string>
     <string name="article_share_template">Hey, there! Here is an interesting article \n%1$s\n I am using \"News 4 You\" to get latest news.</string>
-
     <string name="new_article_notification_title_template">New news articles available!</string>
-
-    <string name="action_share">Share</string>
-    <string name="action_reply">Reply</string>
     <string name="search_hint">Search Articles</string>
-    <string name="title_activity_article_search">ArticleSearchActivity</string>
     <string name="action_search">Search</string>
-    <string name="title_activity_splash">SplashActivity</string>
     <string name="app_icon_description">App Icon</string>
     <string name="server_attribution_splash_screen">Powered by NewsAPI.org</string>
     <string name="share_intent_chooser_title">Share article using…</string>
     <string name="news_detail_read_more_button">Read more</string>
     <string name="news_detail_image_desc">News Image</string>
-    <string name="title_activity_settings">Settings</string>
+    <string name="share_text_mime_type">text/plain</string>
+    <string name="share_article_no_app_to_share">No app available to share</string>
+    <string name="share_article_no_article_selected">Select an article to share</string>
+    <string name="text_article_update_empty">No new news articles</string>
+    <string name="text_article_update_success">Updated with new articles</string>
+    <string name="text_article_update_fail">Failed to load new articles</string>
+    <string name="text_empty_search_string">No search string provided</string>
 
     <!-- Strings related to Settings -->
     <string name="pref_title_relative_time">Show relative time</string>

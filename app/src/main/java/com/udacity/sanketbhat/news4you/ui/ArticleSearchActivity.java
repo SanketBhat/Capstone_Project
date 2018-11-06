@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ShareCompat;
@@ -39,7 +40,6 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
         setSupportActionBar(toolbar);
 
         isTablet = getResources().getBoolean(R.bool.tablet_layout);
-
         FloatingActionButton fab = findViewById(R.id.fab);
         if (isTablet) {
             fab.setOnClickListener(this);
@@ -50,12 +50,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        recyclerView = findViewById(R.id.newsList);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        NewsListAdapter adapter = new NewsListAdapter(null, this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addOnScrollListener(new InfiniteScrollListener(layoutManager, this));
+        NewsListAdapter adapter = setupRecyclerView();
 
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
         viewModel.getSearchResults().observe(this, adapter::setArticles);
@@ -63,6 +58,17 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
         if (getIntent().getAction() != null && getIntent().getAction().equals(Intent.ACTION_SEARCH)) {
             handleSearch();
         }
+    }
+
+    @NonNull
+    private NewsListAdapter setupRecyclerView() {
+        recyclerView = findViewById(R.id.newsList);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        NewsListAdapter adapter = new NewsListAdapter(null, this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addOnScrollListener(new InfiniteScrollListener(layoutManager, this));
+        return adapter;
     }
 
     @Override
@@ -88,7 +94,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
             String query = getIntent().getStringExtra(SearchManager.QUERY);
             performSearch(query);
         } else {
-            Toast.makeText(this, "No search string provided", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.text_empty_search_string, Toast.LENGTH_SHORT).show();
             finish();
         }
     }
@@ -114,7 +120,6 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
             searchView.setIconifiedByDefault(false);
             searchView.setIconified(false);
         }
-        menu.findItem(R.id.action_search).expandActionView();
         return true;
     }
 
@@ -145,7 +150,7 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
             NewsDetailFragment fragment = (NewsDetailFragment) getSupportFragmentManager().findFragmentByTag(NewsDetailFragment.FRAGMENT_TAG);
             if (fragment != null && fragment.getArticle() != null) {
                 Intent shareIntent = ShareCompat.IntentBuilder.from(this)
-                        .setType("text/plain")
+                        .setType(getString(R.string.share_text_mime_type))
                         .setText(getString(R.string.article_share_template, fragment.getArticle().getUrl()))
                         .setChooserTitle(R.string.share_intent_chooser_title)
                         .getIntent();
@@ -153,10 +158,10 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
                 if (getPackageManager().resolveActivity(shareIntent, 0) != null) {
                     startActivity(shareIntent);
                 } else {
-                    showSnackbar("No app available to share");
+                    showSnackbar(getString(R.string.share_article_no_app_to_share));
                 }
             } else {
-                showSnackbar("Select an article to share");
+                showSnackbar(getString(R.string.share_article_no_article_selected));
             }
         }
     }
