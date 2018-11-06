@@ -25,7 +25,7 @@
     <string name="nav_group_title_browse">Browse</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
-    <string name="empty_message_text_news_widget">No news updates!</string>
+    <string name="empty_message_text_news_widget">No news articles!</string>
     <string name="description_divider">Divider</string>
     <string name="article_share_template">Hey, there! Here is an interesting article \n%1$s\n I am using \"News 4 You\" to get latest news.</string>
 

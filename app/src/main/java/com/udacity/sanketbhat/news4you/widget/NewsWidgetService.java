@@ -54,6 +54,7 @@ public class NewsWidgetService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.news_widget_headline_item);
             remoteViews.setTextViewText(R.id.news_widget_headline, articles.get(position).getTitle());
+            remoteViews.setOnClickFillInIntent(R.id.news_widget_headline, new Intent()/*Don't need any data*/);
             return remoteViews;
         }
 

@@ -26,6 +26,8 @@ public class NewsWidget extends AppWidgetProvider {
         Intent adapter = new Intent(context, NewsWidgetService.class).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         adapter.setData(Uri.parse("content://" + System.currentTimeMillis()));
         views.setRemoteAdapter(R.id.top_headlines_widget_list, adapter);
+        views.setPendingIntentTemplate(R.id.top_headlines_widget_list, pendingIntent);
+        views.setEmptyView(R.id.top_headlines_widget_list, R.id.empty_message_widget);
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -41,12 +43,12 @@ public class NewsWidget extends AppWidgetProvider {
 
     @Override
     public void onEnabled(Context context) {
-        // Enter relevant functionality for when the first widget is created
+        // Don't need this callback
     }
 
     @Override
     public void onDisabled(Context context) {
-        // Enter relevant functionality for when the last widget is disabled
+        // Don't need this callback
     }
 
     @Override
