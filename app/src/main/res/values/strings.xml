@@ -234,4 +234,6 @@
         <item>Northern Sami</item>
         <item>Chinese</item>
     </string-array>
+    <string name="title_activity_about">About the app</string>
+    <string name="about_activity_developer_name">Developed by Sanket Bhat</string>
 </resources>

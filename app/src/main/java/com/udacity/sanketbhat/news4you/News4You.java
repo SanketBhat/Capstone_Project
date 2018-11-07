@@ -23,8 +23,8 @@ public class News4You extends Application {
     synchronized public Tracker getDefaultTracker() {
         if (sTracker == null) {
             sTracker = sAnalytics.newTracker(R.xml.global_tracker);
+            sTracker.enableAutoActivityTracking(true);
         }
-
         return sTracker;
     }
 }

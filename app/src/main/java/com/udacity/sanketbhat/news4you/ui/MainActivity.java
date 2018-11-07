@@ -25,7 +25,10 @@ import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.udacity.sanketbhat.news4you.Dependency;
+import com.udacity.sanketbhat.news4you.News4You;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.InfiniteScrollListener;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
@@ -84,6 +87,10 @@ public class MainActivity extends ArticleBaseActivity
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                 .build();
         adView.loadAd(request);
+
+        Tracker t = ((News4You) getApplication()).getDefaultTracker();
+        t.setScreenName("MainActivity");
+        t.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override
