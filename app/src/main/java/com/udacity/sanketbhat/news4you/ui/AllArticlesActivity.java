@@ -19,6 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
@@ -51,11 +52,18 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(() -> swipeRefreshLayout.setRefreshing(false));
 
-        setupNavigationDrawer(toolbar);
+        TextView navSubtitle = setupNavigationDrawer(toolbar);
         setupRecyclerView();
 
         AllArticlesViewModel viewModel = ViewModelProviders.of(this).get(AllArticlesViewModel.class);
-        viewModel.getAllArticles().observe(this, adapter::setArticles);
+        viewModel.getAllArticles().observe(this, articles -> {
+            adapter.setArticles(articles);
+            if (articles != null) {
+                navSubtitle.setText(getString(R.string.navigation_header_subtitle, articles.size()));
+            } else {
+                navSubtitle.setText("");
+            }
+        });
     }
 
     private void setupRecyclerView() {
@@ -66,7 +74,7 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
         recyclerView.setHasFixedSize(true);
     }
 
-    private void setupNavigationDrawer(Toolbar toolbar) {
+    private TextView setupNavigationDrawer(Toolbar toolbar) {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -76,6 +84,8 @@ public class AllArticlesActivity extends AppCompatActivity implements NewsListAd
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().findItem(R.id.nav_all_articles).setChecked(true);
+        View header = navigationView.getHeaderView(0);
+        return header.findViewById(R.id.nav_header_subtitle);
     }
 
     @Override

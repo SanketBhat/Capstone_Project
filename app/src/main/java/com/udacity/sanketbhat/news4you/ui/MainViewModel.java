@@ -63,6 +63,8 @@ public class MainViewModel extends AndroidViewModel implements SharedPreferences
         Context context = getApplication().getApplicationContext();
         if (key.equals(context.getString(R.string.pref_key_update_frequency))) {
             Dependency.scheduleUpdateJob(context, true);
+        } else if (key.equals(context.getString(R.string.pref_key_country))) {
+            repository.onCountryCodeChanged();
         }
     }
 

@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.udacity.sanketbhat.news4you.Dependency;
 import com.udacity.sanketbhat.news4you.R;
@@ -58,14 +59,21 @@ public class MainActivity extends ArticleBaseActivity
             fab.hide();
         }
 
-        setupNavigationDrawer(toolbar);
+        TextView navSubtitle = setupNavigationDrawer(toolbar);
         setupRecyclerView();
 
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this);
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-        viewModel.getArticleList().observe(this, adapter::setArticles);
+        viewModel.getArticleList().observe(this, articles -> {
+            adapter.setArticles(articles);
+            if (articles != null) {
+                navSubtitle.setText(getString(R.string.navigation_header_subtitle, articles.size()));
+            } else {
+                navSubtitle.setText("");
+            }
+        });
 
         Dependency.scheduleUpdateJob(getApplicationContext(), false);
     }
@@ -130,7 +138,7 @@ public class MainActivity extends ArticleBaseActivity
         recyclerView.setHasFixedSize(true);
     }
 
-    private void setupNavigationDrawer(Toolbar toolbar) {
+    private TextView setupNavigationDrawer(Toolbar toolbar) {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -140,6 +148,7 @@ public class MainActivity extends ArticleBaseActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().findItem(R.id.nav_top_headlines).setChecked(true);
+        return navigationView.getHeaderView(0).findViewById(R.id.nav_header_subtitle);
     }
 
     @Override

@@ -11,16 +11,16 @@
         android:id="@+id/news_widget_headline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
+        android:layout_margin="@dimen/widget_margin"
         android:ellipsize="end"
         android:maxLines="2"
         android:textColor="@android:color/white"
-        android:textSize="14sp"
+        android:textSize="@dimen/widget_item_text_size"
         tools:text="Example / Sample headline" />
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="@dimen/widget_item_divider_height"
         android:background="@android:color/white"
         android:contentDescription="@string/description_divider" />
 </LinearLayout>

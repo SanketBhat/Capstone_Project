@@ -82,14 +82,15 @@ public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsLi
             else
                 subTitle.setText(article.getUrl());
 
-            Picasso.with(itemView.getContext()).setIndicatorsEnabled(true);
-            Picasso.with(itemView.getContext())
-                    .load(article.getUrlToImage())
-                    .placeholder(R.drawable.news_image_placeholder)
-                    .error(R.drawable.news_image_placeholder)
-                    .fit()
-                    .centerCrop()
-                    .into(image);
+            if (article.getUrlToImage() != null && !article.getUrlToImage().equals("")) {
+                Picasso.with(itemView.getContext())
+                        .load(article.getUrlToImage())
+                        .placeholder(R.drawable.news_image_placeholder)
+                        .error(R.drawable.news_image_placeholder)
+                        .fit()
+                        .centerCrop()
+                        .into(image);
+            }
         }
 
         @Override

@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 
@@ -43,12 +44,20 @@ public class Repository {
     private Bundle extras;
     private Context context;
 
+    private String countryCode;
+
     private Repository(Context context) {
         this.articleDao = Dependency.getArticleDao(context);
         apiService = Dependency.getAPIService();
         this.context = context;
         executor = Executors.newSingleThreadExecutor();
         extras = new Bundle();
+        onCountryCodeChanged();
+    }
+
+    public void onCountryCodeChanged() {
+        this.countryCode = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_key_country), context.getString(R.string.pref_default_country));
     }
 
     static Repository getInstance(Context context) {
@@ -99,7 +108,7 @@ public class Repository {
         extras.putBoolean(LOADING_PAGE_TEMPLATE + ArticleType.Type.TOP_HEAD, true);
         sendBroadcast(ArticleBaseActivity.EVENT_LOADING, ArticleType.Type.TOP_HEAD);
 
-        apiService.getTopHeadlines("in", pageNumber, context.getString(R.string.NEWS_API_KEY))
+        apiService.getTopHeadlines(countryCode, pageNumber, context.getString(R.string.NEWS_API_KEY))
                 .enqueue(new Callback<NewsResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<NewsResponse> call, @NonNull Response<NewsResponse> response) {
@@ -159,7 +168,7 @@ public class Repository {
         extras.putBoolean(LOADING_PAGE_TEMPLATE + type, true);
         sendBroadcast(ArticleBaseActivity.EVENT_LOADING, type);
 
-        apiService.getArticlesByCategory("in", pageNumber, context.getString(R.string.NEWS_API_KEY), ArticleType.Type.getName(type))
+        apiService.getArticlesByCategory(countryCode, pageNumber, context.getString(R.string.NEWS_API_KEY), ArticleType.Type.getName(type))
                 .enqueue(new Callback<NewsResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<NewsResponse> call, @NonNull Response<NewsResponse> response) {

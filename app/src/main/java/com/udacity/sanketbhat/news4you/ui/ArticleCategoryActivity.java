@@ -34,6 +34,7 @@ public class ArticleCategoryActivity extends ArticleBaseActivity implements Navi
         setContentView(R.layout.activity_article_category);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(getString(R.string.title_activity_article_category));
         setSupportActionBar(toolbar);
 
         boolean isTablet = getResources().getBoolean(R.bool.tablet_layout);

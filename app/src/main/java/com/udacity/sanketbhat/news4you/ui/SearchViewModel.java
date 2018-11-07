@@ -3,6 +3,8 @@ package com.udacity.sanketbhat.news4you.ui;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
+import android.content.Context;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 
 import com.udacity.sanketbhat.news4you.Dependency;
@@ -26,12 +28,17 @@ public class SearchViewModel extends AndroidViewModel {
     private String query;
     private boolean loading;
     private int totalPages, currentPage;
+    private String languageCode;
 
     SearchViewModel(Application application) {
         super(application);
         apiService = Dependency.getAPIService();
         searchResults = new MutableLiveData<>();
         searchResults.setValue(new ArrayList<>());
+        Context context = getApplication().getApplicationContext();
+        languageCode = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_key_language),
+                        context.getString(R.string.pref_default_language));
     }
 
     MutableLiveData<List<Article>> getSearchResults() {
@@ -42,7 +49,7 @@ public class SearchViewModel extends AndroidViewModel {
         if (!loading) {
             query = queryString;
             loading = true;
-            apiService.getEverything(queryString, 1, getApplication().getApplicationContext().getString(R.string.NEWS_API_KEY))
+            apiService.getEverything(queryString, languageCode, 1, getApplication().getApplicationContext().getString(R.string.NEWS_API_KEY))
                     .enqueue(new Callback<NewsResponse>() {
                         @Override
                         public void onResponse(@NonNull Call<NewsResponse> call, @NonNull Response<NewsResponse> response) {
@@ -80,7 +87,7 @@ public class SearchViewModel extends AndroidViewModel {
     void loadNextPage() {
         if (!loading && currentPage < totalPages) {
             loading = true;
-            apiService.getEverything(query, currentPage + 1, getApplication().getApplicationContext().getString(R.string.NEWS_API_KEY))
+            apiService.getEverything(query, languageCode, currentPage + 1, getApplication().getApplicationContext().getString(R.string.NEWS_API_KEY))
                     .enqueue(new Callback<NewsResponse>() {
                         @Override
                         public void onResponse(@NonNull Call<NewsResponse> call, @NonNull Response<NewsResponse> response) {

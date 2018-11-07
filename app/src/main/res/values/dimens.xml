@@ -8,10 +8,29 @@
     <dimen name="appbar_padding_top">8dp</dimen>
     <dimen name="news_list_item_thumbnail_width">128dp</dimen>
 
-    <!--
-Refer to App Widget Documentation for margin information
-http://developer.android.com/guide/topics/appwidgets/index.html#CreatingLayout
-    -->
     <dimen name="widget_margin">8dp</dimen>
     <dimen name="main_activity_list_width">0dp</dimen>
+    <dimen name="appbar_height">300dp</dimen>
+    <dimen name="activity_splash_icon_size">96dp</dimen>
+    <dimen name="activity_splash_icon_margin">16dp</dimen>
+    <dimen name="common_margin">8dp</dimen>
+    <dimen name="activity_splash_app_name_text_size">30sp</dimen>
+    <dimen name="activity_splash_attribution_margin">16dp</dimen>
+    <dimen name="activity_splash_attribution_text_size">18sp</dimen>
+    <dimen name="fragment_detail_title_margin">16dp</dimen>
+    <dimen name="fragment_detail_title_text_size">24sp</dimen>
+    <dimen name="fragment_detail_description_margin">16dp</dimen>
+    <dimen name="fragment_detail_description_text_size">18sp</dimen>
+    <dimen name="fragment_detail_content_text_size">20sp</dimen>
+    <dimen name="fragment_detail_url_margin">16dp</dimen>
+    <dimen name="fragment_detail_cardview_padding">8dp</dimen>
+    <dimen name="fragment_detail_cardview_corner_radius">8dp</dimen>
+    <dimen name="list_item_horizontal_margin">4dp</dimen>
+    <dimen name="list_item_elevation">1dp</dimen>
+    <dimen name="list_item_corner_radius">12dp</dimen>
+    <dimen name="list_item_title_margin">16dp</dimen>
+    <dimen name="list_item_subtitle_margin">16dp</dimen>
+    <dimen name="widget_title_text_size">18sp</dimen>
+    <dimen name="widget_item_text_size">14sp</dimen>
+    <dimen name="widget_item_divider_height">1dp</dimen>
 </resources>
