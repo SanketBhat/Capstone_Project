@@ -5,7 +5,11 @@ import android.os.AsyncTask;
 
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
 import com.udacity.sanketbhat.news4you.Dependency;
+import com.udacity.sanketbhat.news4you.News4You;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.Repository;
 import com.udacity.sanketbhat.news4you.api.NewsAPIService;
@@ -52,7 +56,12 @@ public class NewsUpdateService extends JobService {
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
-                        //TODO: Add analytics and report
+                        Tracker t = ((News4You) getApplication()).getDefaultTracker();
+                        t.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription(new StandardExceptionParser(getApplicationContext(), null)
+                                        .getDescription(Thread.currentThread().getName(), e))
+                                .setFatal(false)
+                                .build());
                         return false;
                     }
                 } else {

@@ -7,7 +7,11 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
 import com.udacity.sanketbhat.news4you.Dependency;
+import com.udacity.sanketbhat.news4you.News4You;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.api.NewsAPIService;
 import com.udacity.sanketbhat.news4you.model.Article;
@@ -67,7 +71,12 @@ public class SearchViewModel extends AndroidViewModel {
 
                         @Override
                         public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
-                            //TODO: Handle this case
+                            Tracker tracker = ((News4You) getApplication()).getDefaultTracker();
+                            tracker.send(new HitBuilders.ExceptionBuilder()
+                                    .setDescription(new StandardExceptionParser(getApplication().getApplicationContext(), null)
+                                            .getDescription(Thread.currentThread().getName(), t))
+                                    .setFatal(false)
+                                    .build());
                             loading = false;
                         }
                     });
@@ -107,7 +116,12 @@ public class SearchViewModel extends AndroidViewModel {
 
                         @Override
                         public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
-                            //TODO: Handle this case
+                            Tracker tracker = ((News4You) getApplication()).getDefaultTracker();
+                            tracker.send(new HitBuilders.ExceptionBuilder()
+                                    .setDescription(new StandardExceptionParser(getApplication().getApplicationContext(), null)
+                                            .getDescription(Thread.currentThread().getName(), t))
+                                    .setFatal(false)
+                                    .build());
                             loading = false;
                         }
                     });

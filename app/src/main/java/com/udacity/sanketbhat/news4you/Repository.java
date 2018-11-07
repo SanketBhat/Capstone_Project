@@ -10,6 +10,9 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
 import com.udacity.sanketbhat.news4you.api.NewsAPIService;
 import com.udacity.sanketbhat.news4you.database.ArticleDao;
 import com.udacity.sanketbhat.news4you.model.Article;
@@ -234,7 +237,12 @@ public class Repository {
                 articleDao.insert(articleType);
             } catch (Exception e) {
                 e.printStackTrace();
-                //TODO: Report using google analytics
+                Tracker t = ((News4You) context).getDefaultTracker();
+                t.send(new HitBuilders.ExceptionBuilder()
+                        .setDescription(new StandardExceptionParser(context, null)
+                                .getDescription(Thread.currentThread().getName(), e))
+                        .setFatal(false)
+                        .build());
             }
         }
         if (insertCount > 0 && type == ArticleType.Type.TOP_HEAD) {

@@ -35,8 +35,8 @@ import com.udacity.sanketbhat.news4you.model.ArticleType;
 public class MainActivity extends ArticleBaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, NewsListAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, InfiniteScrollListener.LoadNextPageCallback, View.OnClickListener {
 
-    public static boolean isAppAlive = false;
     private static final String EXTRA_LIST_STATE = "listState";
+    public static boolean isAppAlive = false;
     private MainViewModel viewModel;
     private SwipeRefreshLayout swipeRefreshLayout;
     private NewsListAdapter adapter;
