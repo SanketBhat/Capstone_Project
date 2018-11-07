@@ -19,6 +19,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.InfiniteScrollListener;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
@@ -58,6 +60,12 @@ public class ArticleSearchActivity extends AppCompatActivity implements NewsList
         if (getIntent().getAction() != null && getIntent().getAction().equals(Intent.ACTION_SEARCH)) {
             handleSearch();
         }
+
+        AdView adView = findViewById(R.id.adView);
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        adView.loadAd(request);
     }
 
     @NonNull

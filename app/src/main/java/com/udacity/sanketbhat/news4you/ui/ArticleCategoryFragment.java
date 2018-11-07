@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.InfiniteScrollListener;
 import com.udacity.sanketbhat.news4you.adapter.NewsListAdapter;
@@ -89,6 +91,11 @@ public class ArticleCategoryFragment extends Fragment implements NewsListAdapter
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getArticlesByCategory(type).observe(this, adapter::setArticles);
 
+        AdView adView = rootView.findViewById(R.id.adView);
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        adView.loadAd(request);
         return rootView;
     }
 

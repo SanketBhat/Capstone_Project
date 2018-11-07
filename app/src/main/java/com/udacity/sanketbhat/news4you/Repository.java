@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
@@ -38,6 +39,7 @@ public class Repository {
     private static final String LAST_REFRESH_TEMPLATE = "last_refresh_";
     private static final String LOADING_PAGE_TEMPLATE = "loading_";
     private static final long AUTO_REFRESH_INTERVAL = 120000;// Two minutes(in milliseconds)
+    private static final String TAG = "Repository";
     @SuppressLint("StaticFieldLeak") //It is OK to use Application Context
     private static Repository mInstance;
     //Executor used for database operations
@@ -46,7 +48,6 @@ public class Repository {
     private NewsAPIService apiService;
     private Bundle extras;
     private Context context;
-
     private String countryCode;
 
     private Repository(Context context) {
@@ -58,11 +59,6 @@ public class Repository {
         onCountryCodeChanged();
     }
 
-    public void onCountryCodeChanged() {
-        this.countryCode = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(context.getString(R.string.pref_key_country), context.getString(R.string.pref_default_country));
-    }
-
     static Repository getInstance(Context context) {
         if (mInstance == null) {
             synchronized (LOCK) {
@@ -70,6 +66,11 @@ public class Repository {
             }
         }
         return mInstance;
+    }
+
+    public void onCountryCodeChanged() {
+        this.countryCode = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.pref_key_country), context.getString(R.string.pref_default_country));
     }
 
     public void getTopHeadlines(boolean onDemand) {
@@ -125,15 +126,18 @@ public class Repository {
                                 insertAllAsync(newsResponse.getArticles(), ArticleType.Type.TOP_HEAD);
 
                             } else {
+                                Log.d(TAG, "Response got from server is not valid/null");
                                 sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                             }
                         } else {
+                            Log.d(TAG, "Response not successful");
                             sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
+                        Log.d(TAG, "Error occurred during article request");
                         sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, ArticleType.Type.TOP_HEAD);
                     }
                 });
@@ -184,13 +188,18 @@ public class Repository {
                             if (newsResponse.getArticles() != null && newsResponse.getStatus().equalsIgnoreCase("ok")) {
                                 insertAllAsync(newsResponse.getArticles(), type);
                                 return;
+                            } else {
+                                Log.d(TAG, "Response got from server is not valid/null");
+                                return;
                             }
                         }
+                        Log.d(TAG, "Response is not successful");
                         sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, type);
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<NewsResponse> call, @NonNull Throwable t) {
+                        Log.d(TAG, "Error during requesting articles");
                         sendBroadcast(ArticleBaseActivity.EVENT_LOAD_FAILED, type);
                     }
                 });
