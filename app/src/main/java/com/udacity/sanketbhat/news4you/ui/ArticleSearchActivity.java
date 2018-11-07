@@ -26,8 +26,8 @@ import com.udacity.sanketbhat.news4you.model.Article;
 
 public class ArticleSearchActivity extends AppCompatActivity implements NewsListAdapter.OnItemClickListener, InfiniteScrollListener.LoadNextPageCallback, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
 
-    private SearchViewModel viewModel;
     private static final String EXTRA_LIST_STATE = "listState";
+    private SearchViewModel viewModel;
     private RecyclerView recyclerView;
     private Snackbar snackbar;
     private boolean isTablet;

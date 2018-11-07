@@ -23,6 +23,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.udacity.sanketbhat.news4you.Dependency;
 import com.udacity.sanketbhat.news4you.R;
 import com.udacity.sanketbhat.news4you.adapter.InfiniteScrollListener;
@@ -76,6 +78,12 @@ public class MainActivity extends ArticleBaseActivity
         });
 
         Dependency.scheduleUpdateJob(getApplicationContext(), false);
+
+        AdView adView = findViewById(R.id.adView);
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        adView.loadAd(request);
     }
 
     @Override
