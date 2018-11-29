@@ -9,7 +9,7 @@ Final Project in Android Developer Nanodegree Udacity. This android app allows y
 
 ## Libraries used
 - [Picasso](http://square.github.io/picasso/)
-- [NewsAPI.org](https://www.newsapi.org/)
+- [NewsAPI.org](https://newsapi.org/)
 - [Retrofit](http://square.github.io/retrofit/)
 - [Room Library](https://developer.android.com/topic/libraries/architecture/room)
 - [Architecture Components](https://developer.android.com/topic/libraries/architecture/)
